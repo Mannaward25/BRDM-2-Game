@@ -9,8 +9,10 @@ H = 600
 screen = pygame.display.set_mode((W, H))
 pygame.display.set_caption('BRDM-2 Game')
 pygame.display.set_icon(pygame.image.load("BRDM-2.1.bmp"))
-image = pygame.image.load('Car.bmp').convert()
-new_image = pygame.transform.scale(image, (100, 100))
+image = pygame.image.load('Car.bmp')
+new_image = pygame.transform.scale(image, (10, 10))
+rect = image.get_rect()
+rect.center = W//2, H//2
 clock = pygame.time.Clock()
 FPS = 60
 running = True
@@ -40,7 +42,7 @@ while running:
             elif event.key == pygame.K_RIGHT:
                 y += speed
     screen.fill(WHITE)
-    screen.blit(image, (100, 100))
+    screen.blit(image, rect)
     pygame.display.update()
     clock.tick(60)
 
