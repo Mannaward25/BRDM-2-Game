@@ -5,9 +5,10 @@ v1, v2 = pygame.init()
 print(v1, v2, sep=' | ')
 
 
-screen = pygame.display.set_mode((1200, 700))
+screen = pygame.display.set_mode((1200, 600))
 pygame.display.set_caption('BRDM-2 Game')
 pygame.display.set_icon(pygame.image.load("BRDM-2.1.bmp"))
+
 
 image = pygame.image.load('Car.bmp')
 new_image = pygame.transform.scale(image, (100, 58))
@@ -15,7 +16,7 @@ new_image = pygame.transform.scale(image, (100, 58))
 brdm_pose = image.get_rect(center=(5, 5))
 
 clock = pygame.time.Clock()
-FPS = 60
+FPS = 30
 running = True
 
 WHITE = (255, 255, 255)
@@ -32,9 +33,10 @@ GREEN = (0, 255, 0)
 # pygame.draw.polygon(screen,GREEN, [[150, 210], [180,250],[90, 290],[30,230]], 1)
 # pygame.display.update()
 
-x = 100
-y = 250
-speed = 5
+x_coord = 100
+y_coord = 150
+speed = 10
+FALL_DOWN = 10
 
 while running:
     keys = pygame.key.get_pressed()
@@ -48,23 +50,23 @@ while running:
     #             y += speed
 
     if keys[pygame.K_d]:
-        x += 10
+        x_coord += speed
     if keys[pygame.K_a]:
-        x -= 10
+        x_coord -= speed
     if keys[pygame.K_SPACE]:
-        while y > 150:
-            y -= 3
-            screen.blit(image, (x, y))
+        while y_coord > 350:
+            y_coord -= 3
+            screen.blit(image, (x_coord, y_coord))
             pygame.display.update()
     else:
-        if y < 250:
-            y += 10
+        if y_coord < 450:
+            y_coord += FALL_DOWN
 
-    if y < 280:
-        y += 5
+    if y_coord < 480:
+        y_coord += FALL_DOWN
 
     screen.fill(WHITE)
-    screen.blit(image, (x, y))
+    screen.blit(image, (x_coord, y_coord))
     pygame.display.update()
-    clock.tick(30)
+    clock.tick(FPS)
 
