@@ -2,17 +2,17 @@ import pygame
 
 pygame.init()
 
-W = 800
-H = 600
+W, H = 800, 600
+
 
 
 screen = pygame.display.set_mode((W, H))
 pygame.display.set_caption('BRDM-2 Game')
 pygame.display.set_icon(pygame.image.load("BRDM-2.1.bmp"))
 image = pygame.image.load('Car.bmp')
-new_image = pygame.transform.scale(image, (10, 10))
-rect = image.get_rect()
-rect.center = W//2, H//2
+new_image = pygame.transform.scale(image, (100, 100))
+brdm_pose = image.get_rect(center = (W//2, H//2))
+
 clock = pygame.time.Clock()
 FPS = 60
 running = True
@@ -20,6 +20,9 @@ running = True
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+
+#передвижение БРДМ
+brdm_right = pygame.
 
 # Полезности
 # pygame.draw.rect(screen, WHITE, (10,10, 50, 100), 2)
@@ -42,7 +45,7 @@ while running:
             elif event.key == pygame.K_RIGHT:
                 y += speed
     screen.fill(WHITE)
-    screen.blit(image, rect)
+    screen.blit(image, brdm_pose)
     pygame.display.update()
     clock.tick(60)
 
