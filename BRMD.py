@@ -1,14 +1,18 @@
 import pygame
 
-pygame.init()
+
+v1, v2 = pygame.init()
+print(v1, v2, sep=' | ')
 
 
-screen = pygame.display.set_mode((600, 400))
+screen = pygame.display.set_mode((1200, 700))
 pygame.display.set_caption('BRDM-2 Game')
 pygame.display.set_icon(pygame.image.load("BRDM-2.1.bmp"))
+
 image = pygame.image.load('Car.bmp')
-new_image = pygame.transform.scale(image, (100, 100))
-brdm_pose = image.get_rect(center = (10, 10))
+new_image = pygame.transform.scale(image, (100, 58))
+
+brdm_pose = image.get_rect(center=(5, 5))
 
 clock = pygame.time.Clock()
 FPS = 60
@@ -28,7 +32,8 @@ GREEN = (0, 255, 0)
 # pygame.draw.polygon(screen,GREEN, [[150, 210], [180,250],[90, 290],[30,230]], 1)
 # pygame.display.update()
 
-x = 200
+x = 100
+y = 250
 speed = 5
 
 while running:
@@ -46,8 +51,20 @@ while running:
         x += 10
     if keys[pygame.K_a]:
         x -= 10
+    if keys[pygame.K_SPACE]:
+        while y > 150:
+            y -= 3
+            screen.blit(image, (x, y))
+            pygame.display.update()
+    else:
+        if y < 250:
+            y += 10
+
+    if y < 280:
+        y += 5
+
     screen.fill(WHITE)
-    screen.blit(image, (x, 10))
+    screen.blit(image, (x, y))
     pygame.display.update()
     clock.tick(30)
 
