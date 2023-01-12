@@ -191,7 +191,7 @@ while running:
     # pol = pygame.draw.polygon(screen, color, (polygon_top_left, polygon_top_right,
     #                                           polygon_bottom_right, polygon_bottom_left), 2)
     for obj in FIGURE_BANK:
-        obj.change_color(color)
+        #obj.change_color(color)
 
         obj.rotate_polygon(deg)
 
