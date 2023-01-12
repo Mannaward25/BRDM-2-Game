@@ -15,6 +15,7 @@ pygame.display.set_caption('BRDM-2 Game')
 clock = pygame.time.Clock()
 FPS = 30
 running = True
+destroy = False
 
 BLUE = pygame.Color((0, 0, 255))
 GREEN = pygame.Color((0, 255, 0))
@@ -34,7 +35,7 @@ rect_y_1 = 150
 # rect_y_3 = 550
 # rect_x_4 = 500
 # rect_y_4 = 150
-shift_speed_x = shift_speed_y = 8
+shift_speed_x = shift_speed_y = 20
 color = GREEN
 FIGURE_BANK = []
 
@@ -47,37 +48,62 @@ def shift_position(x, y, screen_obj) -> tuple:
     global shift_speed_y
     global shift_speed_x
     global color
+    global destroy
 
     if x > SCREEN_X - 100:
         shift_speed_x = -shift_speed_x
         color = random.choice(colors)
-        FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
-                                        gen_random_tuple(), gen_random_tuple(),
-                                        gen_random_tuple(), gen_random_tuple()))
+        if destroy:
+            tmp = FIGURE_BANK.pop()
+            del tmp
+            if len(FIGURE_BANK) == 0:
+                destroy = False
+        else:
+            FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
+                                            gen_random_tuple(), gen_random_tuple(),
+                                            gen_random_tuple(), gen_random_tuple()))
 
     elif x <= 0:
         shift_speed_x = -shift_speed_x
         color = random.choice(colors)
-        FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
-                                        gen_random_tuple(), gen_random_tuple(),
-                                        gen_random_tuple(), gen_random_tuple()))
+        if destroy:
+            tmp = FIGURE_BANK.pop()
+            del tmp
+            if len(FIGURE_BANK) == 0:
+                destroy = False
+        else:
+            FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
+                                            gen_random_tuple(), gen_random_tuple(),
+                                            gen_random_tuple(), gen_random_tuple()))
 
     if y > SCREEN_Y - 50:
         shift_speed_y = -shift_speed_y
         color = random.choice(colors)
         #shift_speed_x = -shift_speed_x
         color = random.choice(colors)
-        FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
-                                        gen_random_tuple(), gen_random_tuple(),
-                                        gen_random_tuple(), gen_random_tuple()))
+        if destroy:
+            tmp = FIGURE_BANK.pop()
+            del tmp
+            if len(FIGURE_BANK) == 0:
+                destroy = False
+        else:
+            FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
+                                            gen_random_tuple(), gen_random_tuple(),
+                                            gen_random_tuple(), gen_random_tuple()))
     elif y <= 0:
         shift_speed_y = -shift_speed_y
         color = random.choice(colors)
         #shift_speed_x = -shift_speed_x
         color = random.choice(colors)
-        FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
-                                        gen_random_tuple(), gen_random_tuple(),
-                                        gen_random_tuple(), gen_random_tuple()))
+        if destroy:
+            tmp = FIGURE_BANK.pop()
+            del tmp
+            if len(FIGURE_BANK) == 0:
+                destroy = False
+        else:
+            FIGURE_BANK.append(FunnyPolygon(screen_obj, color,
+                                            gen_random_tuple(), gen_random_tuple(),
+                                            gen_random_tuple(), gen_random_tuple()))
 
     x += shift_speed_x
     y += shift_speed_y
@@ -192,7 +218,6 @@ while running:
     #                                           polygon_bottom_right, polygon_bottom_left), 2)
     for obj in FIGURE_BANK:
         #obj.change_color(color)
-
         obj.rotate_polygon(deg)
 
     pygame.draw.rect(screen, color, (rect_x_1, rect_y_1, 100, 50))
@@ -203,5 +228,5 @@ while running:
     clock.tick(FPS)
     deg += 1
 
-
-
+    if len(FIGURE_BANK) > 30 and not destroy:
+        destroy = True
