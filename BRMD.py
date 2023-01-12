@@ -67,8 +67,6 @@ while running:
     if y_coord < 480:
         y_coord += FALL_DOWN
 
-
-
     screen.fill(WHITE)
     screen.blit(image, (x_coord, y_coord))
     pygame.display.update()

@@ -118,12 +118,12 @@ class FunnyPolygon:
         self.polygon_top_right = top_right
         self.polygon_bottom_right = self._right_bottom = bottom_right
         self.polygon_bottom_left = bottom_left
-        self.polygon_coord_print()
+        #self.polygon_coord_print()
         self.surface = surface
         self.obj_color = obj_color
         self.obj_width = width
         self.polygon = self.draw(surface, obj_color, ((0, 0), (0, 0), (0, 0), (0, 0)), width)
-        print('ok')
+        #print('ok')
 
         self.center_coord = self.get_polygon_center(self._left_top, self._right_bottom)
         self.r_distance = self.get_distance(self.coord_substract(self._left_top,
@@ -146,7 +146,7 @@ class FunnyPolygon:
 
     def get_distance(self, dist_coord: tuple) -> float:
         res = math.sqrt(math.pow(dist_coord[0], 2) + math.pow(dist_coord[1], 2))
-        print(res)
+        #print(res)
         return res
 
     @staticmethod
@@ -156,7 +156,7 @@ class FunnyPolygon:
         cosin = math.cos(rad)
         y_coord = int(sinus * r)
         x_coord = int(cosin * r)
-        print(x_coord, y_coord)
+        #print(x_coord, y_coord)
         return x_coord, y_coord
 
     def polygon_coord_print(self):
@@ -184,7 +184,7 @@ class FunnyPolygon:
     def rotate_polygon(self, ang_degree):
         a_deg = ang_degree
 
-        print(self.center_coord)
+        #print(self.center_coord)
 
         self.polygon_top_right = self.coord_add(self.center_coord,
                                                 self.calc_coord(self.r_distance, a_deg))
