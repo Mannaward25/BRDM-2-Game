@@ -22,7 +22,7 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
 #передвижение БРДМ
-brdm_right = pygame.
+
 
 # Полезности
 # pygame.draw.rect(screen, WHITE, (10,10, 50, 100), 2)
