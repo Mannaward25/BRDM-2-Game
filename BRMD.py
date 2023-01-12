@@ -34,8 +34,8 @@ speed = 5
 while running:
     keys = pygame.key.get_pressed()
     for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-              running = False
+        if event.type == pygame.QUIT:
+            running = False
     #     elif event.type == pygame.KEYDOWN:
     #         if event.key == pygame.K_LEFT:
     #             x -= speed
@@ -43,9 +43,9 @@ while running:
     #             y += speed
 
     if keys[pygame.K_d]:
-         x += 10
+        x += 10
     if keys[pygame.K_a]:
-         x -= 10
+        x -= 10
     screen.fill(WHITE)
     screen.blit(image, (x, 10))
     pygame.display.update()
