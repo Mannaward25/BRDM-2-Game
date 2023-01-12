@@ -1,5 +1,5 @@
 import pygame
-
+from pygame.locals import *
 
 v1, v2 = pygame.init()
 print(v1, v2, sep=' | ')
@@ -11,17 +11,19 @@ pygame.display.set_icon(pygame.image.load("BRDM-2.1.bmp"))
 
 
 image = pygame.image.load('Car.bmp')
-new_image = pygame.transform.scale(image, (100, 58))
+new_image = pygame.transform.scale(image, (200, 200))
 
-brdm_pose = image.get_rect(center=(5, 5))
+brdm_pose = image.get_rect(center=(10, 10))
 
 clock = pygame.time.Clock()
 FPS = 30
 running = True
 
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
+#WHITE = (255, 255, 255)
+BLUE = pygame.Color((0, 0, 255))
+GREEN = pygame.Color((0, 255, 0))
+
+WHITE = pygame.Color((255, 255, 255))
 
 #передвижение БРДМ
 
@@ -64,6 +66,8 @@ while running:
 
     if y_coord < 480:
         y_coord += FALL_DOWN
+
+
 
     screen.fill(WHITE)
     screen.blit(image, (x_coord, y_coord))
