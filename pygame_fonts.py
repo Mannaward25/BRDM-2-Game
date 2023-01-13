@@ -27,5 +27,4 @@ while pl.running:
         fontObj.render(text_color=pl.gen_random_color())
         clicked = False
 
-    screen.update()
-    screen.set_clock()  # 30 by default
+    

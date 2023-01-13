@@ -23,7 +23,7 @@ class InitWindow:
     def __str__(self):
         return f'{self._screen}'
 
-    def init_window(self):
+    def get_obj(self):
         return self._screen
 
     def set_clock(self, tick=FPS):
