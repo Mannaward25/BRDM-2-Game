@@ -9,8 +9,9 @@ mouse_y = 0
 clicked = False
 
 screen.fill()  # WHITE by default
-fontObj = pl.TextModel(screen, 'USSR STENCIL WEBFONT.ttf', 32)
+fontObj = pl.TextModel(screen, 'freesansbold.ttf', 32)
 fontObj.render("Hello world!")
+fontObj.render("Hello world!2", center=(300, 100))
 
 while pl.running:
 

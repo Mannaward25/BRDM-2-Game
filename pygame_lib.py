@@ -49,16 +49,16 @@ class PolygonModel:
 
 
 class TextModel:
-    def __init__(self, parent_surface, name, size=16, center=(SCREEN_X / 2, SCREEN_Y / 2)):
+    def __init__(self, parent_surface, name, size=16):
         pygame.font.init()
 
         self.parent_surf = parent_surface
-        self.center = center
+        self.center = 0, 0
         self.font_obj = pygame.font.Font(name, size)
         self.text_rect = 0
         self.text = "none"
 
-    def render(self, text=None, text_color=BLACK, background_color=WHITE):
+    def render(self, text=None, text_color=BLACK, background_color=WHITE, center=(SCREEN_X / 2, SCREEN_Y / 2)):
 
         if text:
             self.text = text
@@ -68,7 +68,7 @@ class TextModel:
         antialiasing = True
         font_surface = self.font_obj.render(text, antialiasing, text_color, background_color)
         font_rect = font_surface.get_rect()
-        font_rect.center = self.center
+        font_rect.center = center
         self.parent_surf.blit(font_surface, font_rect)
         self.text_rect = font_rect
 
