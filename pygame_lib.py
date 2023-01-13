@@ -55,13 +55,25 @@ class TextModel:
         self.parent_surf = parent_surface
         self.center = center
         self.font_obj = pygame.font.Font(name, size)
+        self.text_rect = 0
+        self.text = "none"
 
-    def render(self, text, text_color=BLACK, background_color=WHITE):
+    def render(self, text=None, text_color=BLACK, background_color=WHITE):
+
+        if text:
+            self.text = text
+        else:
+            text = self.text
+
         antialiasing = True
         font_surface = self.font_obj.render(text, antialiasing, text_color, background_color)
         font_rect = font_surface.get_rect()
         font_rect.center = self.center
-        self.parent_surf.blit(font_surface, self.font_obj)
+        self.parent_surf.blit(font_surface, font_rect)
+        self.text_rect = font_rect
+
+    def get_rect(self):
+        return self.text_rect
 
 
 def gen_random_color() -> tuple:
