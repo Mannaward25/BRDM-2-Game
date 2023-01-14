@@ -7,10 +7,10 @@ class SizeType:
         self.height = height
 
     def __repr__(self) -> str:
-        return f'(w:{self.width}, h:{self.height})'
+        return f'<SizeType> (w:{self.width}, h:{self.height})'
 
     def __str__(self) -> str:
-        return f'(w:{self.width}, h:{self.height})'
+        return f'<SizeType> (w:{self.width}, h:{self.height})'
 
     def __add__(self, other):
         if isinstance(other, CoordType):
@@ -34,10 +34,10 @@ class RectType:
         self.height = height
 
     def __repr__(self) -> str:
-        return f'(x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height})'
+        return f'<RectType> (x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height})'
 
     def __str__(self) -> str:
-        return f'(x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height})'
+        return f'<RectType> (x:{self.x}, y:{self.y}, w:{self.width}, h:{self.height})'
 
     def rect(self) -> tuple:
         return self.x, self.y, self.width, self.height
@@ -50,10 +50,10 @@ class CoordType:
         self.x, self.y = coord_x, coord_y
 
     def __repr__(self) -> str:
-        return f'({self.x}, {self.y})'
+        return f'<CoordType> ({self.x}, {self.y})'
 
     def __str__(self) -> str:
-        return f'({self.x}, {self.y})'
+        return f'<CoordType> ({self.x}, {self.y})'
 
     def __add__(self, other):
         if isinstance(other, CoordType):
@@ -64,15 +64,13 @@ class CoordType:
         elif isinstance(other, SizeType):
             self_coord = self.coord()
             other_size = other.size()
-
             return RectType(*self_coord, *other_size).rect()
 
     def __sub__(self, other):
         if isinstance(other, CoordType):
             self_x, self_y = self.coord()
             other_x, other_y = other.coord()
-            res = (self_x - other_x, self_y - other_y)
-            return res
+            return CoordType(self_x - other_x, self_y - other_y)
 
     def coord(self) -> tuple:
         return self.x, self.y
@@ -88,10 +86,10 @@ class ColorType:
             self.r, self.g, self.b = rgb
 
     def __repr__(self) -> str:
-        return f'(r:{self.r}, g:{self.g}, b:{self.b})'
+        return f'<ColorType> (r:{self.r}, g:{self.g}, b:{self.b})'
 
     def __str__(self) -> str:
-        return f'(r:{self.r}, g:{self.g}, b:{self.b})'
+        return f'<ColorType> (r:{self.r}, g:{self.g}, b:{self.b})'
 
     def __add__(self, other):
         if isinstance(other, ColorType):

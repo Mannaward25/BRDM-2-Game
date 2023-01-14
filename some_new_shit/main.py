@@ -13,20 +13,22 @@ screen.fill()
 
 ellipse = EllipseObject(screenObj, ColorType(pl.RED), SizeType(50, 50), CoordType(100, 200))
 ellipse.init()
-#ellipse.physical_object.speed
 
-x = 0
-y = 0
+
+rect = RectObject(screenObj, ColorType(pl.GREEN), SizeType(800, 50), CoordType(0, 550))
+rect.init()
+
 while pl.running:
     screen.fill()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
-    x += 1
-    y += 1
-    ellipse.redraw(CoordType(100 + x, 200 + y))
+    ellipse.get_physical_object().dynamic()
+    rect.get_physical_object().static()
+    #print(ellipse.get_physical_object().speed)
+    #print(ellipse.get_physical_object().PHYS_OBJECTS_CASH)
+    #print(ellipse.collide_array)
 
     screen.update()
-
     screen.set_clock()
