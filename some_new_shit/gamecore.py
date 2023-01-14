@@ -59,8 +59,8 @@ class CoordType:
         if isinstance(other, CoordType):
             self_x, self_y = self.coord()
             other_x, other_y = other.coord()
-            res = (self_x + other_x, self_y + other_y)
-            return res
+            #res = (self_x + other_x, self_y + other_y)
+            return CoordType(self_x + other_x, self_y + other_y)
         elif isinstance(other, SizeType):
             self_coord = self.coord()
             other_size = other.size()

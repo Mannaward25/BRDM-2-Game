@@ -57,6 +57,12 @@ class EllipseObject(GeometricObject):
                  material='universal'):
         super().__init__(surface, color, objsize, coord, material, width, self.TYPE)
 
+    def __repr__(self):
+        return f'<GeometricObject> <{self.TYPE}>'
+
+    def __str__(self):
+        return f'<GeometricObject> <{self.TYPE}>'
+
     def init(self):  # physical encapsulation
         self.geometric_entity = pygame.draw.rect(self.parent_surface, self.color.rgb(),
                                                  self.coords + self.size)
@@ -94,12 +100,10 @@ class EllipseObject(GeometricObject):
                 y_res = self.y_coord + (sin_y * (x / 2))
                 self.collide_array.append(CoordType(int(x_res), int(y_res)))
 
-    def collide_box(self):
-        pass
-
     def is_point_of_object(self, point: CoordType):
         center = self.coords
         radius_x, radius_y = self.size.size()
+
         if self.size.is_symmetric():  # for circles
             distance = point - center
             x, y = distance.coord()
@@ -116,6 +120,12 @@ class RectObject(GeometricObject):
     def __init__(self, surface, color: ColorType, objsize: SizeType, coord: CoordType, width: int = 0,
                  material='universal'):
         super().__init__(surface, color, objsize, coord, material, width, self.TYPE)
+
+    def __repr__(self):
+        return f'<GeometricObject> <{self.TYPE}>'
+
+    def __str__(self):
+        return f'<GeometricObject> <{self.TYPE}>'
 
     def init(self):  # physical encapsulation
         self.geometric_entity = pygame.draw.rect(self.parent_surface, self.color.rgb(),
@@ -136,8 +146,15 @@ class RectObject(GeometricObject):
     def get_geometric_entity(self):
         return self.geometric_entity
 
-    def is_point_of_object(self, point) -> bool:  # FIXME
-        pass
+    def is_point_of_object(self, point: CoordType) -> bool:  # FIXME
+        size_x, size_y = self.size.size()
+        
+        point_x, point_y = point.coord()
+        if point_x in range(self.x_coord, self.x_coord + size_x) and \
+           point_y in range(self.y_coord, self.y_coord + size_y):
+            return True
+        else:
+            return False
 
     def gen_collide_array(self):
         size_x, size_y = self.size.size()
@@ -184,10 +201,18 @@ class PhysicalObject:
         self.density = self.material_type.density
         self.mass = 0
         self.energy = 0
-        self.speed = 0.01
+        self.speed = 0
+        self.collided = False
+        self.point_of_collision = None
 
         # init functions
         self._form_mass()
+
+    def __repr__(self) -> str:
+        return f'<PhysicalObject> <{self.shape}> | coordinates: x:{self.x}; y:{self.y}> | '
+
+    def __str__(self) -> str:
+        return f'<PhysicalObject> <{self.shape}> | coordinates: x:{self.x}; y:{self.y}> | '
 
     def _form_mass(self):
         self.volume = self.geometricObj.get_volume()
@@ -195,20 +220,38 @@ class PhysicalObject:
 
     def dynamic(self):
         self.geometricObj.collide_array.clear()
-        self.geometricObj.x_coord = self.x
-        self.geometricObj.y_coord = self.y
+        self.geometricObj.x_coord = self.x + int(self.geometricObj.size.width / 2) + 1
+
+        print(self.shape)
+        if self.shape == GeometricObject.ELLIPSE:
+            self.geometricObj.y_coord = self.y + int(self.geometricObj.size.height / 2) + 1
+        elif self.shape == GeometricObject.RECT:
+            self.geometricObj.y_coord = self.y + int(self.geometricObj.size.height)
+
         self.geometricObj.gen_collide_array()
 
-        self.collisions_detection()  # FIXME everything is working just proceed
         self.speed = self.gravity.acceleration(self.speed, self.mass)
-        self.y += self.speed
+
+        if self.collided:
+            if self.speed > 0:
+                self.collided = False
+
+            if self.y < self.point_of_collision.coord()[1]:
+                self.speed = int(-self.speed * 0.88)
+            else:
+                self.y += int(self.speed * 0.7)  #  KINETIC ENERGY
+        else:
+            self.point_of_collision = self.collisions_detection()  # FIXME everything is working just proceed
+
+            self.y += int(self.speed)
 
         self.geometricObj.redraw(CoordType(self.x, self.y))
 
     def static(self):
         self.geometricObj.redraw(CoordType(self.x, self.y))
 
-    def collisions_detection(self):
+    def collisions_detection(self, cash=[]) -> CoordType:
+
         self_collide_array = self.geometricObj.collide_array[:]
         for pair in self.PHYS_OBJECTS_CASH:
             if self == pair[1]:
@@ -216,7 +259,11 @@ class PhysicalObject:
             else:
                 for point in self_collide_array:
                     if pair[0].is_point_of_object(point):
-                        print(f"Collision at {point}")
+                        print(f"Collision of {self} with {pair[1]} at {point} ")
+                        self.collided = True
+                        self.speed = int(-self.speed * 0.8)
+
+                        return point
 
 
 class Gravity:
@@ -229,7 +276,7 @@ class Gravity:
             self.g = g
 
     def acceleration(self, speed, mass):
-        speed += (self.g * (mass / 1000)) / 10
+        speed += int((self.g * (mass / 1000)) / 10)
         return speed
 
 
