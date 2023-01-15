@@ -45,7 +45,7 @@ class GeometricObject:
     def gen_collide_array(self):
         pass
 
-    def is_point_of_object(self, point) -> bool:
+    def is_point_of_object(self, point, otherObject: 'GeometricObject'=None) -> bool:
         pass
 
 
@@ -67,6 +67,7 @@ class EllipseObject(GeometricObject):
         self.geometric_entity = pygame.draw.rect(self.parent_surface, self.color.rgb(),
                                                  self.coords + self.size)
         self.gen_collide_array()
+        print(self.collide_array)
         return self.geometric_entity
 
     def get_physical_object(self):
@@ -100,17 +101,26 @@ class EllipseObject(GeometricObject):
                 y_res = self.y_coord + (sin_y * (x / 2))
                 self.collide_array.append(CoordType(int(x_res), int(y_res)))
 
-    def is_point_of_object(self, point: CoordType):
+    def is_point_of_object(self, point: CoordType, otherObject: GeometricObject=None):
         center = self.coords
-        radius_x, radius_y = self.size.size()
+        radius_x, radius_y = int(self.size.width / 2), int(self.size.height / 2)
 
-        if self.size.is_symmetric():  # for circles
-            distance = point - center
-            x, y = distance.coord()
-            hypotenuse = math.pow(x, 2) + math.pow(y, 2)
-            if hypotenuse <= radius_x:
-                return True
-            else:
+        x, y = point.coord()
+
+        if self.size.is_symmetric():
+
+            for degree in range(0, 360 + 2, 1):
+                rad = math.radians(degree)
+                shift_x = int(math.cos(rad) * radius_x)
+                shift_y = int(math.cos(rad) * radius_y)
+
+                circle_point = center + CoordType(shift_x, shift_y)
+                pnt_x, pnt_y = circle_point.coord()
+                if x >= pnt_x - 1 and y >= pnt_y - 1 and degree in range(90, 180 + 1) or \
+                   x >= pnt_x - 1 and y <= pnt_y + 1 and degree in range(181, 270 + 1) or \
+                   x <= pnt_x + 1 and y <= pnt_y + 1 and degree in range(271, 360 + 1) or \
+                   x <= pnt_x + 1 and y >= pnt_y - 1 and degree in range(0, 90 + 1):
+                    return True
                 return False
 
 
@@ -131,6 +141,7 @@ class RectObject(GeometricObject):
         self.geometric_entity = pygame.draw.rect(self.parent_surface, self.color.rgb(),
                                                  self.coords + self.size)
         self.gen_collide_array()
+        print(self.collide_array)
         return self.geometric_entity
 
     def redraw(self, coord):
@@ -146,10 +157,10 @@ class RectObject(GeometricObject):
     def get_geometric_entity(self):
         return self.geometric_entity
 
-    def is_point_of_object(self, point: CoordType) -> bool:  # FIXME
-        size_x, size_y = self.size.size()
-        
+    def is_point_of_object(self, point: CoordType, otherObject: GeometricObject=None) -> bool:
+        size_x, size_y = self.size.size()   # FIXME
         point_x, point_y = point.coord()
+
         if point_x in range(self.x_coord, self.x_coord + size_x) and \
            point_y in range(self.y_coord, self.y_coord + size_y):
             return True
@@ -220,30 +231,15 @@ class PhysicalObject:
 
     def dynamic(self):
         self.geometricObj.collide_array.clear()
-        self.geometricObj.x_coord = self.x + int(self.geometricObj.size.width / 2) + 1
-
-        print(self.shape)
-        if self.shape == GeometricObject.ELLIPSE:
-            self.geometricObj.y_coord = self.y + int(self.geometricObj.size.height / 2) + 1
-        elif self.shape == GeometricObject.RECT:
-            self.geometricObj.y_coord = self.y + int(self.geometricObj.size.height)
+        self.geometricObj.x_coord = self.x
+        self.geometricObj.y_coord = self.y
 
         self.geometricObj.gen_collide_array()
 
-        self.speed = self.gravity.acceleration(self.speed, self.mass)
+        self.speed = self.gravity.acceleration(self.speed, self.mass)  # if we have vertical projection
 
-        if self.collided:
-            if self.speed > 0:
-                self.collided = False
-
-            if self.y < self.point_of_collision.coord()[1]:
-                self.speed = int(-self.speed * 0.88)
-            else:
-                self.y += int(self.speed * 0.7)  #  KINETIC ENERGY
-        else:
-            self.point_of_collision = self.collisions_detection()  # FIXME everything is working just proceed
-
-            self.y += int(self.speed)
+        self.point_of_collision = self.collisions_detection()  # FIXME everything is working just proceed
+        self.y += int(self.speed)
 
         self.geometricObj.redraw(CoordType(self.x, self.y))
 
