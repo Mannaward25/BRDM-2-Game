@@ -22,6 +22,7 @@ class InitWindow:
     def __init__(self, title: str = "pygame", coord: tuple = (SCREEN_X, SCREEN_Y)):
         self._screen = pygame.display.set_mode(coord)
         pygame.display.set_caption(title)
+        self.delta_time = 1
         self.clock = pygame.time.Clock()
 
     def __repr__(self):
@@ -34,7 +35,8 @@ class InitWindow:
         return self._screen
 
     def set_clock(self, tick=FPS):
-        self.clock.tick(tick)
+        self.delta_time = self.clock.tick(tick)
+        print(f'delta_time = {self.delta_time}')
 
     def fill(self, color=WHITE):
         self._screen.fill(color)
