@@ -20,6 +20,8 @@ class Player:
 
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
+            print(self.map_pos)
+            print(self.pos)
             dx += speed_cos
             dy += speed_sin
         if keys[pg.K_s]:
