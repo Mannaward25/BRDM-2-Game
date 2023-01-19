@@ -1,8 +1,8 @@
 import math
 
 #  window settings
-RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900)
-FPS = 60
+RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
+FPS = 120
 
 #  game settings
 PLAYER_POS = 1.5, 5
@@ -25,5 +25,5 @@ YELLOW = (255, 255, 0)
 GREEN = (0, 255, 255)
 
 #  BLOCK SIZE
-BLOCK_SIZE = 50  #  100 for (1600, 900)
+BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
 
