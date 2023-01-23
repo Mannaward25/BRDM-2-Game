@@ -9,6 +9,8 @@ PLAYER_POS = 1.5, 5
 PLAYER_ANGLE = 0
 PLAYER_SPEED = 0.032
 PLAYER_ROT_SPEED = 0.016  # rotation speed
+HALF_WIDTH = WIDTH // 2
+HALF_HEIGHT = HEIGHT // 2
 
 # Raycasting settings
 FOV = math.pi / 3
@@ -23,7 +25,10 @@ BLACK = (0, 0, 0)
 DARK_GRAY = (169, 169, 169)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 255)
+WHITE = (255, 255, 255)
 
 #  BLOCK SIZE
 BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
 
+SCREEN_DIST = HALF_WIDTH / math.tan(HALF_FOV)
+SCALE = WIDTH // NUM_RAYS

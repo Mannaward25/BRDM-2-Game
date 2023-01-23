@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+import random as rd
 from game_settings import *
 
 
@@ -56,11 +57,27 @@ class RayCasting:
             else:
                 depth = depth_vert
 
-            pg.draw.line(self.game.screen, YELLOW, (BLOCK_SIZE * ox, BLOCK_SIZE * oy),
-                         (BLOCK_SIZE * ox + BLOCK_SIZE * depth * cos_a,
-                          BLOCK_SIZE * oy + BLOCK_SIZE * depth * sin_a), 2)
+            # pg.draw.line(self.game.screen, YELLOW, (BLOCK_SIZE * ox, BLOCK_SIZE * oy),
+            #              (BLOCK_SIZE * ox + BLOCK_SIZE * depth * cos_a,
+            #               BLOCK_SIZE * oy + BLOCK_SIZE * depth * sin_a), 2)  #  2D raycasting
+
+            # remove fishbowl effect
+            depth *= math.cos(self.game.player.angle - ray_angle)
+
+            # projection
+            proj_height = SCREEN_DIST / (depth + 0.0001)
+
+            # draw walls
+            color = [255 / (1 + depth ** 5 * 0.00002)] * 3   # dependence of color and distance to wall
+            pg.draw.rect(self.game.screen, color,
+                         (ray * SCALE, HALF_HEIGHT - proj_height // 2, SCALE, proj_height))
 
             ray_angle += DELTA_ANGLE
 
     def update(self):
         self.ray_cast()
+
+    def rand_color(self):
+        return (rd.randint(0, 255),
+                rd.randint(0, 255),
+                rd.randint(0, 255))
