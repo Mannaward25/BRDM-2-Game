@@ -15,6 +15,7 @@ class Game:
         self.clock = pg.time.Clock()
         self.delta_time = 1
         self.new_game()
+        pg.mouse.set_visible(False)
 
     def new_game(self):
         self.map = Map(self)
@@ -30,7 +31,7 @@ class Game:
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
-        self.screen.fill(BLACK)
+        # self.screen.fill(BLACK)
         self.object_renderer.draw()
         # self.map.draw()
         # self.player.draw()
