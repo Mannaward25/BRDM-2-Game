@@ -1,14 +1,14 @@
 import math
 
 #  window settings
-RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)
-FPS = 70
+RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
+FPS = 90
 
 #  game settings
 PLAYER_POS = 1.5, 5
 PLAYER_ANGLE = 0
-PLAYER_SPEED = 0.032
-PLAYER_ROT_SPEED = 0.032  # rotation speed
+PLAYER_SPEED = 0.064
+PLAYER_ROT_SPEED = 0.052  # rotation speed
 PLAYER_SIZE_SCALE = 5
 HALF_WIDTH = WIDTH // 2
 HALF_HEIGHT = HEIGHT // 2
@@ -30,7 +30,7 @@ WHITE = (255, 255, 255)
 FLOOR_COLOR = (35, 35, 35)
 
 #  BLOCK SIZE
-BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)
+BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
 
 SCREEN_DIST = HALF_WIDTH / math.tan(HALF_FOV)
 SCALE = WIDTH // NUM_RAYS
