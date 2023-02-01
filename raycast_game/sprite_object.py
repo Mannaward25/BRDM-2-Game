@@ -1,3 +1,5 @@
+import math
+
 import pygame as pg
 from game_settings import *
 
@@ -35,11 +37,16 @@ class SpriteObject:
         self.theta = math.atan2(dy, dx)
 
         delta = self.theta - self.player.angle
+        # print(f'dx:{dx}, dy:{dy}, p_angle:{self.player.angle}, theta:{self.theta}, '
+        #       f'theta(degr):{math.degrees(self.theta)}, delta before:{delta}')
         if (dx > 0 and self.player.angle > math.pi) or (dx < 0 and dy < 0):
             delta += math.tau
 
         delta_rays = delta / DELTA_ANGLE
         self.screen_x = (HALF_NUM_RAYS + delta_rays) * SCALE
+
+        # print(f'theta:{self.theta}, p_angle:{self.player.angle}, delta:{delta}, '
+        #       f'delta_rays:{delta_rays}, self.screen_x:{self.screen_x}')
 
         self.dist = math.hypot(dx, dy)
         self.norm_dist = self.dist * math.cos(delta)
