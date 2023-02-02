@@ -25,6 +25,13 @@ class Player:
             self.time_prev = time_now
             return True
 
+    def check_game_win(self):
+        if not any([npc.alive for npc in self.game.object_handler.npc_list]):
+            self.game.object_renderer.victory()
+            pg.display.flip()
+            pg.time.delay(1500)
+            self.game.new_game()
+
     def check_game_over(self):
         if self.health < 1:
             self.game.object_renderer.game_over()
@@ -110,6 +117,7 @@ class Player:
         self.movement()
         self.mouse_control()
         self.recover_health()
+        self.check_game_win()
 
     @property
     def pos(self):

@@ -5,7 +5,7 @@ RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
 FPS = 90
 
 #  game settings
-PLAYER_POS = 1.5, 3
+PLAYER_POS = 1.5, 2.8
 PLAYER_ANGLE = 0
 PLAYER_SPEED = 0.064
 PLAYER_ROT_SPEED = 0.052  # rotation speed

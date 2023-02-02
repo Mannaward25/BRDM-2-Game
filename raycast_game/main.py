@@ -80,9 +80,13 @@ class Game:
 
     def run(self):
         while True:
-            self.check_events()
-            self.update()
-            self.draw()
+            try:
+                self.check_events()
+                self.update()
+                self.draw()
+            except ZeroDivisionError as err:
+                print(f'{err}')
+                continue
 
 
 if __name__ == '__main__':

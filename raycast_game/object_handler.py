@@ -26,6 +26,7 @@ class ObjectHandler:
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'grass.png', pos=(12.5, 1.5)))
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'grass.png', pos=(13, 6)))
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'grass.png', pos=(14.8, 7)))
+        add_sprite(SpriteObject(game, path=self.static_sprite_path + 'cow.png', pos=(14.5, 7.5)))
         #add_sprite(SpriteObject(game, path=self.static_sprite_path + 'crate.png', pos=(12.5, 3.5),
         #                        scale=0.6, shift=0.5))
         add_sprite(AnimatedSprite(game))
@@ -36,7 +37,18 @@ class ObjectHandler:
         add_sprite(AnimatedSprite(game, path=self.anim_sprite_path + 'red_light/0.png', pos=(13, 1.2)))
 
         # npc map
-        add_npc(NPC(game))
+        #ddddddadd_npc(NPC(game))
+        add_npc(SoldierNPC(game, pos=(2, 7)))
+        add_npc(CacoDemonNPC(game, pos=(2.5, 6.5)))
+        add_npc(CacoDemonNPC(game, pos=(6, 5)))
+        add_npc(CacoDemonNPC(game, pos=(9.2, 1.2)))
+        add_npc(CacoDemonNPC(game, pos=(10, 7.5)))
+        add_npc(SoldierNPC(game, pos=(7, 5)))
+        add_npc(SoldierNPC(game, pos=(5.2, 1.5)))
+        add_npc(CacoDemonNPC(game, pos=(10, 5)))
+        add_npc(CyberDemonNPC(game, pos=(14, 3)))
+        add_npc(CyberDemonNPC(game, pos=(13, 2)))
+        add_npc(CyberDemonNPC(game, pos=(12, 6)))
 
     def update(self):
         self.npc_positions = {npc.map_pos for npc in self.npc_list if npc.alive}
