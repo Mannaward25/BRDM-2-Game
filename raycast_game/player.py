@@ -10,6 +10,13 @@ class Player:
         self.x, self.y = PLAYER_POS
         self.angle = PLAYER_ANGLE
         self.rel = 0
+        self.shot = False
+
+    def single_fire_event(self, event):
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1 and not self.shot and not self.game.weapon.reloading:
+                self.shot = True
+                self.game.weapon.reloading = True
 
     def movement(self):
         sin_a = math.sin(self.angle)
@@ -68,6 +75,7 @@ class Player:
         if my < HALF_HEIGHT or my > HALF_HEIGHT:
             pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
         self.rel = pg.mouse.get_rel()[0]
+        # print(f'mouse_rel:{self.rel}')
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
 
