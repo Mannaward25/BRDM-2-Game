@@ -53,7 +53,7 @@ class SpriteObject:
 
         self.dist = math.hypot(dx, dy)
         self.norm_dist = self.dist * math.cos(delta)
-        if -self.IMAGE_HALF_WIDTH < self.screen_x < (WIDTH + self.IMAGE_HALF_WIDTH) and self.norm_dist > 0.5:
+        if -self.IMAGE_HALF_WIDTH < self.screen_x < (WIDTH + self.IMAGE_HALF_WIDTH) and self.norm_dist > 0.3:
             self.get_sprite_projection()
 
     def update(self):
@@ -62,7 +62,7 @@ class SpriteObject:
 
 class AnimatedSprite(SpriteObject):
     def __init__(self, game, path='resources/sprites/animated_sprites/green_light/0.png',
-                 pos=(9.2, 4.5), scale=0.7, shift=0.4, animation_time=120):
+                 pos=(9.2, 4.5), scale=0.7, shift=0.4, animation_time=90):
         super().__init__(game, path, pos, scale, shift)
         self.animation_time = animation_time
         self.path = path.rsplit('/', 1)[0]

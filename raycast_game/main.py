@@ -8,6 +8,16 @@ from object_render import *
 from sprite_object import *
 from object_handler import *
 from weapon import *
+from sound import *
+from pathfinding import *
+
+# npc movement algorithm (npc.py)
+# npc ray cast algorithm (npc.py)
+# npc path finding algorithm (pathfinding.py)
+# npc run_logic review (npc.py)
+# global trigger sense (main.py)
+# breadth first search algorithm (in pathfinding.py)
+# player interactions (get_damage, digits object_render.py)
 
 
 class Game:
@@ -17,6 +27,11 @@ class Game:
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
         self.delta_time = 1
+
+        self.global_trigger = False  # special global event for npc animation
+        self.global_event = pg.USEREVENT + 0  # special global event for npc animation
+        pg.time.set_timer(self.global_event, 40)  # special global event for npc animation
+
         self.new_game()
         pg.mouse.set_visible(False)
 
@@ -31,6 +46,8 @@ class Game:
         # new way of rendering sprite objects
         self.object_handler = ObjectHandler(self)
         self.weapon = Weapon(self)
+        self.sound = Sound(self)
+        self.pathfinding = PathFinding(self)
 
     def update(self):
         self.player.update()
@@ -44,18 +61,21 @@ class Game:
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
-        # self.screen.fill(BLACK)
+        #self.screen.fill(BLACK)
         self.object_renderer.draw()
         self.weapon.draw()
-        # self.map.draw()
-        # self.player.draw()
+        #self.map.draw()
+        #self.player.draw()
 
     def check_events(self):
+        self.global_trigger = False
         for event in pg.event.get():
             if event.type == pg.QUIT or \
                     (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
                 pg.quit()
                 sys.exit()
+            elif event.type == self.global_event:
+                self.global_trigger = True
             self.player.single_fire_event(event)
 
     def run(self):

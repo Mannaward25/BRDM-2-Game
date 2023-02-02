@@ -11,10 +11,37 @@ class Player:
         self.angle = PLAYER_ANGLE
         self.rel = 0
         self.shot = False
+        self.health = PLAYER_MAX_HEALTH
+        self.health_recovery_delay = 700
+        self.time_prev = pg.time.get_ticks()
+
+    def recover_health(self):
+        if self.check_health_recovery_delay() and self.health < PLAYER_MAX_HEALTH:
+            self.health += 1
+
+    def check_health_recovery_delay(self):
+        time_now = pg.time.get_ticks()
+        if time_now - self.time_prev > self.health_recovery_delay:
+            self.time_prev = time_now
+            return True
+
+    def check_game_over(self):
+        if self.health < 1:
+            self.game.object_renderer.game_over()
+            pg.display.flip()
+            pg.time.delay(1500)
+            self.game.new_game()
+
+    def get_damage(self, damage):
+        self.health -= damage
+        self.game.object_renderer.player_damage()
+        self.game.sound.player_pain.play()
+        self.check_game_over()
 
     def single_fire_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1 and not self.shot and not self.game.weapon.reloading:
+                self.game.sound.shotgun.play()
                 self.shot = True
                 self.game.weapon.reloading = True
 
@@ -62,9 +89,9 @@ class Player:
             self.y += dy
 
     def draw(self):
-        # pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),
-        #              (self.x * BLOCK_SIZE + WIDTH * math.cos(self.angle),
-        #               self.y * BLOCK_SIZE + WIDTH * math.sin(self.angle)), 2)
+        pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),
+                     (self.x * BLOCK_SIZE + WIDTH * math.cos(self.angle),
+                      self.y * BLOCK_SIZE + WIDTH * math.sin(self.angle)), 2)
 
         pg.draw.circle(self.game.screen, GREEN, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE), 15)
 
@@ -82,6 +109,7 @@ class Player:
     def update(self):
         self.movement()
         self.mouse_control()
+        self.recover_health()
 
     @property
     def pos(self):
