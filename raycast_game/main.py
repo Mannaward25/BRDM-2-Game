@@ -50,6 +50,9 @@ class Game:
         self.sound = Sound(self)
         self.pathfinding = PathFinding(self)
 
+        pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #
+        pg.mixer.music.play()
+
     def update(self):
         self.player.update()
         self.raycasting.update()
