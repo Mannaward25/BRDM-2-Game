@@ -38,6 +38,7 @@ class Game:
     def new_game(self):
         self.map = Map(self)
         self.player = Player(self)
+        self.doom_fire = DoomFire(self)
         self.object_renderer = ObjectRenderer(self)
         self.raycasting = RayCasting(self)
         # self.static_sprite = SpriteObject(self) # old way of rendering sprite objects
@@ -56,14 +57,18 @@ class Game:
         # self.animated_sprite.update()
         self.object_handler.update()
         self.weapon.update()
+        self.doom_fire.update()
         pg.display.flip()
         self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
         #self.screen.fill(BLACK)
+
         self.object_renderer.draw()
         self.weapon.draw()
+        #self.doom_fire.draw()
+
         #self.map.draw()
         #self.player.draw()
 
