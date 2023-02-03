@@ -60,8 +60,8 @@ class ObjectRenderer:
         self.sky_offset = (self.sky_offset + 4.5 * self.game.player.rel) % WIDTH
         # print(f'sky_offset:{self.sky_offset}, mouse_rel:{self.game.player.rel}')
         doom_fire_surf = self.doom_fire.fire_surf
-        self.screen.blit(self.sky_image, (-self.sky_offset, 0))
-        self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
+        # self.screen.blit(self.sky_image, (-self.sky_offset, 0))
+        # self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
 
         for i in range(FIRE_REPS):
 
