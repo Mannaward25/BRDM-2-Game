@@ -27,6 +27,7 @@ class ObjectHandler:
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'grass.png', pos=(13, 6)))
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'grass.png', pos=(14.8, 7)))
         add_sprite(SpriteObject(game, path=self.static_sprite_path + 'cow.png', pos=(14.5, 7.5)))
+        add_sprite(SpriteObject(game, path=self.static_sprite_path + 'fox.png', pos=(3.6, 1.2), scale=0.3, shift=1.5))
         #add_sprite(SpriteObject(game, path=self.static_sprite_path + 'crate.png', pos=(12.5, 3.5),
         #                        scale=0.6, shift=0.5))
         add_sprite(AnimatedSprite(game))
