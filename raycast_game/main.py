@@ -51,8 +51,8 @@ class Game:
         self.sound = Sound(self)
         self.pathfinding = PathFinding(self)
 
-        pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #
-        pg.mixer.music.play()
+        # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
+        # pg.mixer.music.play()
 
     def update(self):
         self.player.update()
@@ -62,7 +62,7 @@ class Game:
         # self.animated_sprite.update()
         self.object_handler.update()
         self.weapon.update()
-        self.doom_fire.update()
+        #self.doom_fire.update()
         pg.display.flip()
         self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
