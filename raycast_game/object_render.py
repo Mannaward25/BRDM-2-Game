@@ -110,7 +110,7 @@ class ObjectRenderer:
             22: self.get_texture('resources/textures/dacha/8_yard.JPG'),
             23: self.get_texture('resources/textures/dacha/9_yard.JPG'),
             24: self.get_texture('resources/textures/4.png'),
-
+            25: self.get_texture('resources/textures/3.png'),
         }
 
 
