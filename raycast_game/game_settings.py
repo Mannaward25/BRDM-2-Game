@@ -1,7 +1,10 @@
 import math
 
+#  BLOCK SIZE
+BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)
+WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 #  window settings
-RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
+RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)
 FPS = 60
 
 #  game settings
@@ -34,8 +37,7 @@ GREEN = (0, 255, 255)
 WHITE = (255, 255, 255)
 FLOOR_COLOR = (35, 35, 35)  # 255, 204, 102, |  115, 140, 121 |  35, 35, 35
 
-#  BLOCK SIZE
-BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
+
 
 SCREEN_DIST = HALF_WIDTH / math.tan(HALF_FOV)
 SCALE = WIDTH // NUM_RAYS

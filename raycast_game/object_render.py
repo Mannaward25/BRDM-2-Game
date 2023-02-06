@@ -226,22 +226,22 @@ class Mode7:
             self.key = 'd'
 
     def update(self):
-        self.get_player_pos()
+        pos = self.game.player.pos
         self.get_player_ang()
         #time = self.game.time
         #pos = np.array([time, 0])
         #angle = np.sin(time * 0.3)
         self.define_pressed_key()
-        self.test_rendering_parameters()
+        #self.test_rendering_parameters()
         self.screen_array = self.render_frame(self.floor_array, self.screen_array,
-                                              self.texture_size, self.player_pos, self.player_ang)
+                                              self.texture_size, pos, self.player_ang)
         #sin = round(math.sin(self.player_ang), 3)
         #cos = round(math.cos(self.player_ang), 3)
         #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
         #print(f'angle: {round(self.player_ang, 3)}')
-
+        
     def test_rendering_parameters(self):
-
+        """for tests only"""
         sin, cos = math.sin(self.player_ang), math.cos(self.player_ang)
         pos = self.player_pos
         for i in range(WIDTH):
@@ -271,14 +271,15 @@ class Mode7:
     def render_frame(floor_array, screen_array, texture_size, pos, angle):
 
         sin, cos = math.sin(angle), math.cos(angle)
+        hov_sin, hov_cos = math.sin(HALF_FOV), math.cos(HALF_FOV)
 
         # iterating over screen array
-        for i in prange(WIDTH):
-            for j in range(HALF_HEIGHT, HEIGHT):
+        for ix in prange(WIDTH):
+            for jy in range(HALF_HEIGHT, HEIGHT):
                 # x, y, z
-                x = HALF_WIDTH - i
-                y = j + FOCAL_LEN
-                z = j - HALF_HEIGHT + 0.01
+                x = HALF_WIDTH - ix
+                y = jy + FOCAL_LEN
+                z = jy - HALF_HEIGHT + 0.01
 
                 rx = (x * cos - y * sin)
                 ry = (x * sin + y * cos)
@@ -293,7 +294,7 @@ class Mode7:
                 floor_col = floor_array[floor_pos]
 
                 # fill screen
-                screen_array[i, j] = floor_col
+                screen_array[ix, jy] = floor_col
 
         return screen_array
 

@@ -13,8 +13,6 @@ class RayCasting:
         self.textures = self.game.object_renderer.wall_textures
         self.depth = 1
         self.project_height = 0
-        self.floor_tiles_hor = []
-        self.floor_tiles_vert = []
 
     def get_objects_to_render(self):
         self.objects_to_render = []
@@ -26,10 +24,8 @@ class RayCasting:
                     offset * (TEXTURE_SIZE - SCALE), 0, SCALE, TEXTURE_SIZE
                 )
                 wall_column = pg.transform.scale(wall_column, (SCALE, proj_height))
-                top_floor_y = HALF_HEIGHT + proj_height // 2
 
                 wall_pos = (ray * SCALE, (HALF_HEIGHT - proj_height // 2))
-                #self.floor_to_render(top_floor_y, offset, ray)
 
             else:
                 texture_height = TEXTURE_SIZE * HEIGHT / proj_height
@@ -42,22 +38,10 @@ class RayCasting:
 
             self.objects_to_render.append((depth, wall_column, wall_pos))
 
-    def floor_to_render(self, top_floor_y, offset, ray):  # unused
-
-        for depth, pos in self.floor_tiles_hor:
-
-            proj_height = SCREEN_DIST / depth + 0.00001
-            floor_row = self.textures[FLOOR_TEXTURE].subsurface(
-                0, (TEXTURE_SIZE - SCALE) * offset, TEXTURE_SIZE, SCALE
-            )
-            floor_row = pg.transform.scale(floor_row, (proj_height, SCALE))
-            floor_pos = (0, (top_floor_y + ray))  # FIXME!!!
-            self.objects_to_render.append((depth, floor_row, floor_pos))
 
     def ray_cast(self):
         self.raycasting_result = []  # clearing every time method has been called
-        self.floor_tiles_vert = []
-        self.floor_tiles_hor = []
+
         ox, oy = self.game.player.pos
         x_map, y_map = self.game.player.map_pos
         texture_vert, texture_hor = 1, 1
@@ -81,9 +65,6 @@ class RayCasting:
                 if tile_hor in self.game.map.world_map:
                     texture_hor = self.game.map.world_map[tile_hor]
                     break
-                elif tile_hor in self.game.map.open_space:
-
-                    self.floor_tiles_hor.append((depth_hor, tile_hor))
 
                 x_hor += dx
                 y_hor += dy
@@ -103,9 +84,6 @@ class RayCasting:
                 if tile_vert in self.game.map.world_map:
                     texture_vert = self.game.map.world_map[tile_vert]
                     break
-                elif tile_vert in self.game.map.open_space:
-
-                    self.floor_tiles_vert.append((depth_vert, tile_vert))
 
                 x_vert += dx
                 y_vert += dy
@@ -140,12 +118,20 @@ class RayCasting:
             # raycasting result
             self.raycasting_result.append((depth, proj_height, texture, offset))
 
-            ray_angle += DELTA_ANGLE
+            # self.game.mode7.screen_array = self.game.mode7.render_frame(
+            #     self.game.mode7.floor_array,
+            #     self.game.mode7.screen_array,
+            #     self.game.mode7.texture_size,
+            #     (ox, oy),
+            #     ray_angle
+            # )
 
+            ray_angle += DELTA_ANGLE
 
     def update(self):
         self.ray_cast()
         self.get_objects_to_render()
+        #self.game.mode7.draw()  # THERE IS FLOOR RENDERING
 
     def rand_color(self):
         return (rd.randint(0, 255),
