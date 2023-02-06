@@ -61,15 +61,16 @@ class Game:
 
     def update(self):
         self.player.update()
-        self.raycasting.update()
+        self.mode7.update()
+        #self.raycasting.update()  # working
         #self.floor.update()
         # self.static_sprite.update()
         # self.animated_sprite.update()
-        #self.object_handler.update()
-        self.weapon.update()
-        #self.doom_fire.update()
-        self.mode7.update()
-        pg.display.flip()
+        #self.object_handler.update() # working
+        self.weapon.update()  # working
+        #self.doom_fire.update()  # working
+
+        pg.display.update()
         self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
@@ -80,7 +81,7 @@ class Game:
         self.weapon.draw()
         #self.doom_fire.draw()
 
-        #self.map.draw()
+        #self.map.draw()  # working
         #self.player.draw()
 
     def check_events(self):

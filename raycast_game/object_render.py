@@ -64,14 +64,13 @@ class ObjectRenderer:
         self.sky_offset = (self.sky_offset + 4.5 * self.game.player.rel) % WIDTH
         # print(f'sky_offset:{self.sky_offset}, mouse_rel:{self.game.player.rel}')
         doom_fire_surf = self.doom_fire.fire_surf
-        # self.screen.blit(self.sky_image, (-self.sky_offset, 0))
-        # self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
 
         for i in range(FIRE_REPS):
-
             self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i - self.sky_offset, 0 - HALF_HEIGHT))
             self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i + WIDTH - self.sky_offset,
                                               0 - HALF_HEIGHT))
+        self.screen.blit(self.sky_image, (-self.sky_offset, 0))
+        self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
 
         # floor
         #pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
@@ -155,7 +154,7 @@ class DoomFire:
                     self.fire_array[y - 1][x] = 0
 
     def draw_fire(self):
-        self.fire_surf.fill(BLACK)
+        #self.fire_surf.fill(BLACK)
         for y, row in enumerate(self.fire_array):
             for x, color_index in enumerate(row):
                 if color_index:
@@ -201,11 +200,25 @@ class Mode7:
         self.textures = self.game.object_renderer.wall_textures
         self.floor_text = self.textures[FLOOR_TEXTURE]
         self.texture_size = self.floor_text.get_size()
+        self.hor_texture_rays = self.texture_size[0]
+        self.hor_texture_rays = 120
+
+        self.vert_texture_rays = self.texture_size[1]
+
+        self.vert_texture_rays_half = 100
+        self.delta_hor_ray = FOV / self.hor_texture_rays
+
         self.floor_array = pg.surfarray.array3d(self.floor_text)
+        self.test_frame = np.random.uniform(0, 1, (self.hor_texture_rays, self.vert_texture_rays_half * 2, 3))
+
         self.player_pos = self.game.player.x, self.game.player.y
         self.player_ang = self.game.player.angle
         self.screen_array = pg.surfarray.array3d(pg.Surface(RES))
 
+        # lame way
+        self.mod = self.hor_texture_rays / math.ceil(math.degrees(FOV))
+        self.mod = 120 / 60
+        self.surf = 0
         self.key = ''
 
     def get_player_pos(self):
@@ -226,52 +239,54 @@ class Mode7:
             self.key = 'd'
 
     def update(self):
-        pos = self.game.player.pos
         self.get_player_ang()
         #time = self.game.time
         #pos = np.array([time, 0])
         #angle = np.sin(time * 0.3)
         self.define_pressed_key()
         #self.test_rendering_parameters()
+
+            #sin = round(math.sin(self.player_ang), 3)
+            #cos = round(math.cos(self.player_ang), 3)
+            #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
+            #print(f'angle: {round(self.player_ang, 3)}')
+        pos=''
         self.screen_array = self.render_frame(self.floor_array, self.screen_array,
-                                              self.texture_size, pos, self.player_ang)
-        #sin = round(math.sin(self.player_ang), 3)
-        #cos = round(math.cos(self.player_ang), 3)
-        #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
-        #print(f'angle: {round(self.player_ang, 3)}')
+                                              self.texture_size, self.game.player.pos, self.player_ang)
+        #self.mode_seven_ray_cast()
+
         
-    def test_rendering_parameters(self):
-        """for tests only"""
-        sin, cos = math.sin(self.player_ang), math.cos(self.player_ang)
-        pos = self.player_pos
-        for i in range(WIDTH):
-            for j in range(HALF_HEIGHT, HEIGHT):
-                # x, y, z
-                x = HALF_WIDTH - i
-                y = j + FOCAL_LEN
-                z = j - HALF_HEIGHT + 0.01
+    def mode_seven_ray_cast(self):
+        pos_x, pos_y = self.game.player.pos
+        pos_x -= 1.5
+        pos_y -= 2.8
+        self.get_player_ang()
 
-                rx = (x * cos - y * sin)
-                ry = (y * sin + y * cos)
+        # ray_angle = self.player_ang - HALF_FOV + 0.00001
+        for ray_h in range(self.hor_texture_rays):
+            ray_angle = self.player_ang + np.deg2rad(ray_h / self.mod - 30)
+            #ray_angle += self.delta_hor_ray
+            sin, cos = np.sin(ray_angle), np.cos(ray_angle)
+            cos2 = np.cos(np.deg2rad(ray_h / self.mod - 30))
+            #cos2 = math.cos(self.player_ang - ray_angle)
 
-                floor_x = (rx / z - pos[1]) * MODE_SEVEN_SCALE
-                floor_y = (ry / z + pos[0]) * MODE_SEVEN_SCALE
+            for ray_v in range(self.vert_texture_rays_half):
+                n = (self.vert_texture_rays_half / (self.vert_texture_rays_half - ray_v)) / cos2
+                dx, dy = pos_x + cos * n, pos_y + sin * pos_y
 
-                floor_pos = int(floor_x % self.texture_size[0]), \
-                    int(floor_y % self.texture_size[1])
+                floor_x, floor_y = int(dx * 256 % 100 - 1), int(dy * 256 % 100 - 1)
+                self.test_frame[ray_h][self.vert_texture_rays_half*2 - ray_v - 1] = self.floor_array[floor_x][floor_y]
 
-                print(f'x:{x}; y:{y}; z:{z}; ang:{round(self.player_ang)}; '
-                      f'sin:{round(sin, 3)}; cos:{round(cos, 3)}'
-                      f'rx:{rx}; ry:{ry} floor_x:{floor_x}; floor_y:{floor_y}; floor_pos:{floor_pos}')
-                floor_col = self.floor_array[floor_pos]
-                print('floor col', floor_col)
+                # if int(dx) % 2 == int(dy) % 2:
+                #     self.test_frame[ray_h][self.vert_texture_rays - ray_v - 1] = [0, 0, 0]
+                # else:
+                #     self.test_frame[ray_h][self.vert_texture_rays - ray_v - 1] = [1, 1, 1]
 
     @staticmethod
     @njit(fastmath=True, parallel=True)
     def render_frame(floor_array, screen_array, texture_size, pos, angle):
 
         sin, cos = math.sin(angle), math.cos(angle)
-        hov_sin, hov_cos = math.sin(HALF_FOV), math.cos(HALF_FOV)
 
         # iterating over screen array
         for ix in prange(WIDTH):
@@ -301,3 +316,6 @@ class Mode7:
     def draw(self):
         pg.surfarray.blit_array(self.game.screen, self.screen_array)
 
+        # self.game.screen.blit(self.surf, (0, 0))
+        # self.surf = pg.surfarray.make_surface(self.test_frame * 255)
+        # self.surf = pg.transform.scale(self.surf, RES)
