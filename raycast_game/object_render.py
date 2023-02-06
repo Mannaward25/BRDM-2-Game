@@ -1,7 +1,11 @@
+import math
+
 import pygame as pg
 from game_settings import *
 from pygame import gfxdraw
-from random import randint
+from random import randint, shuffle
+from numba import njit, prange
+import numpy as np
 
 
 class ObjectRenderer:
@@ -70,7 +74,7 @@ class ObjectRenderer:
                                               0 - HALF_HEIGHT))
 
         # floor
-        pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
+        #pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
 
     def render_game_objects(self):
         list_of_objects = sorted(self.game.raycasting.objects_to_render,  # find out
@@ -121,6 +125,24 @@ class DoomFire:
         self.palette = self.get_palette()
         self.fire_array = self.get_fire_array()
         self.fire_surf = pg.Surface([PIXEL_SIZE * FIRE_WIDTH, HEIGHT])
+        self.rnd = 0
+
+    @staticmethod
+    @njit(fastmath=True, parallel=True)
+    def render_fire(fire_array, rnd):
+        for x in prange(FIRE_WIDTH):
+            for y in prange(1, FIRE_HEIGHT):
+                color_index = fire_array[y][x]
+                if color_index:
+                    fire_array[y - 1][(x - rnd + 1) % FIRE_WIDTH] = color_index - rnd % 2
+                else:
+                    fire_array[y - 1][x] = 0
+        return fire_array
+
+    def do_fire_test(self):
+        self.rnd = randint(0, 30)
+        self.fire_array = np.array(self.fire_array)
+        self.fire_array = self.render_fire(self.fire_array, self.rnd)
 
     def do_fire(self):
         for x in range(FIRE_WIDTH):
@@ -133,7 +155,7 @@ class DoomFire:
                     self.fire_array[y - 1][x] = 0
 
     def draw_fire(self):
-        #self.fire_surf.fill(BLACK)
+        self.fire_surf.fill(BLACK)
         for y, row in enumerate(self.fire_array):
             for x, color_index in enumerate(row):
                 if color_index:
@@ -165,8 +187,116 @@ class DoomFire:
         return palette
 
     def update(self):
+        #self.do_fire_test() # test method with numba rendering
         self.do_fire()
 
     def draw(self):
         # self.draw_palette()
         self.draw_fire()
+
+
+class Mode7:
+    def __init__(self, game):
+        self.game = game
+        self.textures = self.game.object_renderer.wall_textures
+        self.floor_text = self.textures[FLOOR_TEXTURE]
+        self.texture_size = self.floor_text.get_size()
+        self.floor_array = pg.surfarray.array3d(self.floor_text)
+        self.player_pos = self.game.player.x, self.game.player.y
+        self.player_ang = self.game.player.angle
+        self.screen_array = pg.surfarray.array3d(pg.Surface(RES))
+
+        self.key = ''
+
+    def get_player_pos(self):
+        self.player_pos = self.game.player.x, self.game.player.y
+
+    def get_player_ang(self):
+        self.player_ang = self.game.player.angle
+
+    def define_pressed_key(self):  # unused
+        keys = pg.key.get_pressed()
+        if keys[pg.K_w]:
+            self.key = 'w'
+        if keys[pg.K_s]:
+            self.key = 's'
+        if keys[pg.K_a]:
+            self.key = 'a'
+        if keys[pg.K_d]:
+            self.key = 'd'
+
+    def update(self):
+        self.get_player_pos()
+        self.get_player_ang()
+        #time = self.game.time
+        #pos = np.array([time, 0])
+        #angle = np.sin(time * 0.3)
+        self.define_pressed_key()
+        self.test_rendering_parameters()
+        self.screen_array = self.render_frame(self.floor_array, self.screen_array,
+                                              self.texture_size, self.player_pos, self.player_ang)
+        #sin = round(math.sin(self.player_ang), 3)
+        #cos = round(math.cos(self.player_ang), 3)
+        #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
+        #print(f'angle: {round(self.player_ang, 3)}')
+
+    def test_rendering_parameters(self):
+
+        sin, cos = math.sin(self.player_ang), math.cos(self.player_ang)
+        pos = self.player_pos
+        for i in range(WIDTH):
+            for j in range(HALF_HEIGHT, HEIGHT):
+                # x, y, z
+                x = HALF_WIDTH - i
+                y = j + FOCAL_LEN
+                z = j - HALF_HEIGHT + 0.01
+
+                rx = (x * cos - y * sin)
+                ry = (y * sin + y * cos)
+
+                floor_x = (rx / z - pos[1]) * MODE_SEVEN_SCALE
+                floor_y = (ry / z + pos[0]) * MODE_SEVEN_SCALE
+
+                floor_pos = int(floor_x % self.texture_size[0]), \
+                    int(floor_y % self.texture_size[1])
+
+                print(f'x:{x}; y:{y}; z:{z}; ang:{round(self.player_ang)}; '
+                      f'sin:{round(sin, 3)}; cos:{round(cos, 3)}'
+                      f'rx:{rx}; ry:{ry} floor_x:{floor_x}; floor_y:{floor_y}; floor_pos:{floor_pos}')
+                floor_col = self.floor_array[floor_pos]
+                print('floor col', floor_col)
+
+    @staticmethod
+    @njit(fastmath=True, parallel=True)
+    def render_frame(floor_array, screen_array, texture_size, pos, angle):
+
+        sin, cos = math.sin(angle), math.cos(angle)
+
+        # iterating over screen array
+        for i in prange(WIDTH):
+            for j in range(HALF_HEIGHT, HEIGHT):
+                # x, y, z
+                x = HALF_WIDTH - i
+                y = j + FOCAL_LEN
+                z = j - HALF_HEIGHT + 0.01
+
+                rx = (x * cos - y * sin)
+                ry = (x * sin + y * cos)
+                # projection
+
+                floor_x = (rx / z - pos[1]) * MODE_SEVEN_SCALE
+                floor_y = (ry / z + pos[0]) * MODE_SEVEN_SCALE
+
+                # floor pos and color
+                floor_pos = int(floor_x % texture_size[0]), \
+                    int(floor_y % texture_size[1])
+                floor_col = floor_array[floor_pos]
+
+                # fill screen
+                screen_array[i, j] = floor_col
+
+        return screen_array
+
+    def draw(self):
+        pg.surfarray.blit_array(self.game.screen, self.screen_array)
+

@@ -27,6 +27,7 @@ class Game:
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
         self.delta_time = 1
+        self.time = self.get_time()
 
         self.global_trigger = False  # special global event for npc animation
         self.global_event = pg.USEREVENT + 0  # special global event for npc animation
@@ -34,6 +35,10 @@ class Game:
 
         self.new_game()
         pg.mouse.set_visible(False)
+
+    @staticmethod
+    def get_time():
+        return pg.time.get_ticks() * 0.001
 
     def new_game(self):
         self.map = Map(self)
@@ -50,7 +55,7 @@ class Game:
         self.weapon = Weapon(self)
         self.sound = Sound(self)
         self.pathfinding = PathFinding(self)
-
+        self.mode7 = Mode7(self)
         # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
         # pg.mixer.music.play()
 
@@ -60,16 +65,17 @@ class Game:
         #self.floor.update()
         # self.static_sprite.update()
         # self.animated_sprite.update()
-        self.object_handler.update()
+        #self.object_handler.update()
         self.weapon.update()
         #self.doom_fire.update()
+        self.mode7.update()
         pg.display.flip()
         self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
         #self.screen.fill(BLACK)
-
+        self.mode7.draw()
         self.object_renderer.draw()
         self.weapon.draw()
         #self.doom_fire.draw()
@@ -92,6 +98,7 @@ class Game:
         while True:
             try:
                 self.check_events()
+                self.time = self.get_time()
                 self.update()
                 self.draw()
             except ZeroDivisionError as err:

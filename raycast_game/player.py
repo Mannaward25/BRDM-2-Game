@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+import numpy as np
 from game_settings import *
 
 
@@ -8,6 +9,7 @@ class Player:
     def __init__(self, game):
         self.game = game
         self.x, self.y = PLAYER_POS
+        self.x_prev, self.y_prev = PLAYER_POS
         self.angle = PLAYER_ANGLE
         self.rel = 0
         self.shot = False
@@ -53,8 +55,8 @@ class Player:
                 self.game.weapon.reloading = True
 
     def movement(self):
-        sin_a = math.sin(self.angle)
-        cos_a = math.cos(self.angle)
+        sin_a = np.sin(self.angle)
+        cos_a = np.cos(self.angle)
         dx, dy = 0, 0
         speed = PLAYER_SPEED * self.game.delta_time
         speed_sin = speed * sin_a
@@ -94,6 +96,13 @@ class Player:
             self.x += dx
         if self.check_wall(int(self.x), int(self.y + dy * scale)):
             self.y += dy
+
+    def delta_shift(self, x=0, y=0, player_angle=0):
+        sin = math.sin(player_angle)
+        cos = math.cos(player_angle)
+        dx = self.x_prev - x
+        dy = self.y_prev - y
+
 
     def draw(self):
         pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),

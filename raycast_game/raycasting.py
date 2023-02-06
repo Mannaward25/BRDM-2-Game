@@ -42,7 +42,7 @@ class RayCasting:
 
             self.objects_to_render.append((depth, wall_column, wall_pos))
 
-    def floor_to_render(self, top_floor_y, offset, ray):
+    def floor_to_render(self, top_floor_y, offset, ray):  # unused
 
         for depth, pos in self.floor_tiles_hor:
 
