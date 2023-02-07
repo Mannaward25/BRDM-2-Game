@@ -256,7 +256,7 @@ class Mode7:
         #self.mode_seven_ray_cast()
 
         
-    def mode_seven_ray_cast(self):
+    def mode_seven_ray_cast(self):  # unused
         pos_x, pos_y = self.game.player.pos
         pos_x -= 1.5
         pos_y -= 2.8
@@ -283,7 +283,7 @@ class Mode7:
                 #     self.test_frame[ray_h][self.vert_texture_rays - ray_v - 1] = [1, 1, 1]
 
     @staticmethod
-    @njit(fastmath=True, parallel=True)
+    @njit(fastmath=True, parallel=True)  # unused
     def render_frame(floor_array, screen_array, texture_size, pos, angle):
 
         sin, cos = math.sin(angle), math.cos(angle)

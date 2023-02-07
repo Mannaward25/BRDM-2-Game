@@ -124,7 +124,7 @@ class RayCasting:
             # ----------------------------------
             # new way with textures
             # floor casting
-            self.floor_ray_cast(ray, (ox, oy), ray_angle)
+            #self.floor_ray_cast(ray, (ox, oy), ray_angle)
             # raycasting result
             self.raycasting_result.append((depth, proj_height, texture, offset))
 
@@ -155,9 +155,8 @@ class RayCasting:
             y = ray_y + FOCAL_LEN
             z = ray_y - HALF_HEIGHT + 0.001
 
-
             # rotation
-            rx = (x * cos - y * sin)
+            rx = ((x * cos) - y * sin)
             ry = (x * sin + y * cos)
 
             # projection
@@ -216,13 +215,15 @@ class RayCasting:
                 rd.randint(0, 255))
 
 
-class FloorRayCasting(RayCasting):
-    def __init__(self, game):
-        super().__init__(game)
+class VectorRayCast:
 
-    def floor_ray_cast(self):
-        depth = self.game.raycasting.depth
-        project_height = self.game.raycasting.project_height
+    def __init__(self, game):
+        self.game = game
+        self.raycasting_result = []
+        self.objects_to_render = []
+
+    def ray_cast(self):
+        pass
 
     def update(self):
-        self.floor_ray_cast()
+        self.ray_cast()

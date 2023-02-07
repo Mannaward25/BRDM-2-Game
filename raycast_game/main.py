@@ -46,8 +46,8 @@ class Game:
         self.doom_fire = DoomFire(self)
         self.object_renderer = ObjectRenderer(self)
         self.mode7 = Mode7(self)
-        self.raycasting = RayCasting(self)
-        self.floor = FloorRayCasting(self)
+        #self.raycasting = RayCasting(self)
+
         # self.static_sprite = SpriteObject(self) # old way of rendering sprite objects
         # self.animated_sprite = AnimatedSprite(self)
 
@@ -62,9 +62,8 @@ class Game:
 
     def update(self):
         self.player.update()
-        #self.mode7.update()  # working
-        self.raycasting.update()  # working
-        #self.floor.update()
+        self.mode7.update()  # working
+        #self.raycasting.update()  # working
         # self.static_sprite.update()
         # self.animated_sprite.update()
         #self.object_handler.update() # working
@@ -78,7 +77,7 @@ class Game:
     def draw(self):
         #self.screen.fill(BLACK)
         self.mode7.draw()  # working
-        self.object_renderer.draw()
+        #self.object_renderer.draw()
         self.weapon.draw()
         #self.doom_fire.draw()
 

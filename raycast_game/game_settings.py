@@ -28,6 +28,8 @@ HALF_NUM_RAYS = NUM_RAYS // 2
 DELTA_ANGLE = FOV / NUM_RAYS
 MAX_DEPTH = 20
 
+# Vector raycasting
+
 #  colors
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
