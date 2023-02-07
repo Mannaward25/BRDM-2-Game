@@ -239,7 +239,7 @@ class Mode7:
         #cos = round(math.cos(self.player_ang), 3)
         #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
         #print(f'angle: {round(self.player_ang, 3)}')
-        
+
     def test_rendering_parameters(self):
         """for tests only"""
         sin, cos = math.sin(self.player_ang), math.cos(self.player_ang)
