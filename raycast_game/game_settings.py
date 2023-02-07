@@ -1,10 +1,10 @@
 import math
 
 #  BLOCK SIZE
-BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)
-WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
+BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
+WEAPON_SCALE = 0.4  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 #  window settings
-RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)
+RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
 FPS = 60
 
 #  game settings
@@ -20,11 +20,15 @@ HALF_HEIGHT = HEIGHT // 2
 
 # Raycasting settings
 FOV = math.pi / 3
+DEG_FOV = 60
+HALF_DEG_FOV = DEG_FOV // 2
 HALF_FOV = FOV / 2
 NUM_RAYS = WIDTH // 2
 HALF_NUM_RAYS = NUM_RAYS // 2
 DELTA_ANGLE = FOV / NUM_RAYS
 MAX_DEPTH = 20
+
+# Vector raycasting
 
 #  colors
 BLACK = (0, 0, 0)
@@ -70,9 +74,11 @@ FIRE_HEIGHT = HEIGHT // PIXEL_SIZE
 FIRE_WIDTH = WIDTH // (PIXEL_SIZE * FIRE_REPS)
 
 # floor ray_cast
-FLOOR_RAYS = TEXTURE_SIZE // 2
-FLOOR_DELTA_RAY = 1 / FLOOR_RAYS
 FLOOR_TEXTURE = 25
+HOR_FLOOR_RAYS = 120
+VERT_FLOOR_RAYS = 200
+VERT_FLOOR_RAYS_HALF = VERT_FLOOR_RAYS // 2
+DELTA_FLOOR_HOR = FOV / 120
 
 # MODE7
 

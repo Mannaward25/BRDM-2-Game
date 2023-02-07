@@ -45,8 +45,9 @@ class Game:
         self.player = Player(self)
         self.doom_fire = DoomFire(self)
         self.object_renderer = ObjectRenderer(self)
-        self.raycasting = RayCasting(self)
-        self.floor = FloorRayCasting(self)
+        self.mode7 = Mode7(self)
+        #self.raycasting = RayCasting(self)
+
         # self.static_sprite = SpriteObject(self) # old way of rendering sprite objects
         # self.animated_sprite = AnimatedSprite(self)
 
@@ -55,32 +56,32 @@ class Game:
         self.weapon = Weapon(self)
         self.sound = Sound(self)
         self.pathfinding = PathFinding(self)
-        self.mode7 = Mode7(self)
+
         # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
         # pg.mixer.music.play()
 
     def update(self):
         self.player.update()
-        self.raycasting.update()
-        #self.floor.update()
+        self.mode7.update()  # working
+        #self.raycasting.update()  # working
         # self.static_sprite.update()
         # self.animated_sprite.update()
-        #self.object_handler.update()
-        self.weapon.update()
-        #self.doom_fire.update()
-        self.mode7.update()
-        pg.display.flip()
+        #self.object_handler.update() # working
+        self.weapon.update()  # working
+        #self.doom_fire.update()  # working
+
+        pg.display.update()
         self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
         #self.screen.fill(BLACK)
-        self.mode7.draw()
-        self.object_renderer.draw()
+        self.mode7.draw()  # working
+        #self.object_renderer.draw()
         self.weapon.draw()
         #self.doom_fire.draw()
 
-        #self.map.draw()
+        #self.map.draw()  # working
         #self.player.draw()
 
     def check_events(self):
