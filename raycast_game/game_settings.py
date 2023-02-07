@@ -20,6 +20,8 @@ HALF_HEIGHT = HEIGHT // 2
 
 # Raycasting settings
 FOV = math.pi / 3
+DEG_FOV = 60
+HALF_DEG_FOV = DEG_FOV // 2
 HALF_FOV = FOV / 2
 NUM_RAYS = WIDTH // 2
 HALF_NUM_RAYS = NUM_RAYS // 2

@@ -289,8 +289,8 @@ class Mode7:
         sin, cos = math.sin(angle), math.cos(angle)
 
         # iterating over screen array
-        for ix in prange(WIDTH):
-            for jy in range(HALF_HEIGHT, HEIGHT):
+        for ix in range(0, WIDTH, 2):
+            for jy in range(HALF_HEIGHT, HEIGHT, 2):
                 # x, y, z
                 x = HALF_WIDTH - ix
                 y = jy + FOCAL_LEN
