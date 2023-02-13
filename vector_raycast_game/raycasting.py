@@ -13,11 +13,14 @@ class RayCasting:
 
     def ray_cast(self):
         dir_x, dir_y = self.game.player.dir_values
+        plane_x, plane_y = self.game.player.plane_dir_values
         for x in range(WIDTH):
-            camera_x = 2 * x / WIDTH - 1  # x coord in camera space
+            camera_x = (2 * x) / (WIDTH - 1)  # x coord in camera space
+            ray_dir_x = dir_x + plane_x * camera_x
+            ray_dir_y = dir_y + plane_y * camera_x
 
     def update(self):
-        pass
+        self.ray_cast()
 
     def rand_color(self):
         return (rd.randint(0, 255),

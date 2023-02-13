@@ -89,3 +89,7 @@ class Player:
     @property
     def dir_values(self):
         return self.dir_x, self.dir_y
+
+    @property
+    def plane_dir_values(self):
+        return self.plane_x, self.plane_y
