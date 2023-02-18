@@ -21,7 +21,7 @@ class Game:
         pg.init()
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
-        self.delta_time = 0
+        self.delta_time = 1
         self.time = self.get_time()
 
         pg.mouse.set_visible(False)
@@ -39,17 +39,18 @@ class Game:
         self.ray_casting = RayCasting(self)
 
     def update(self):
+
+        self.player.update()
         self.ray_casting.update()
-        print('ok')
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
         print(self.delta_time)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
+        self.screen.fill(BLACK)
         #self.map.draw()
         #self.player.draw()
-        pass
 
     def check_events(self):
         for event in pg.event.get():

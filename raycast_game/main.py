@@ -71,7 +71,7 @@ class Game:
         #self.doom_fire.update()  # working
 
         pg.display.update()
-        self.clock.tick(FPS)
+        self.delta_time = self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):

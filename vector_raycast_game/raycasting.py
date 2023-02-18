@@ -12,45 +12,47 @@ class RayCasting:
         self.game = game
         self.screen = game.screen
         self.textures = self.game.object_renderer.test_wall_textures
+        self.is_north_south = False
 
     def ray_cast(self):
 
-        dir_x, dir_y = self.game.player.dir_values
-        plane_x, plane_y = self.game.player.plane_dir_values
-
-        p_pos_x, p_pos_y = self.game.player.pos  # player position
+        dir_x, dir_y = self.game.player.dir_values  # dir vector
+        plane_x, plane_y = self.game.player.plane_dir_values  # plane vector
 
         for x in range(WIDTH):
+            p_pos_x, p_pos_y = self.game.player.pos  # player position vector
             map_x, map_y = self.game.player.map_pos  # map position
-            camera_x = (2 * x) / (WIDTH - 1)  # x coord in camera space
+            camera_x = (2 * x) / (WIDTH - 1)  # ratio of screen plane
             ray_dir_x = dir_x + plane_x * camera_x
-            ray_dir_y = dir_y + plane_y * camera_x
+            ray_dir_y = dir_y + plane_y * camera_x  # the same as (part of plane vector)
 
-            delta_dist_x = 1e30 if ray_dir_x == 0 else abs(1 / ray_dir_x)
-            delta_dist_y = 1e30 if ray_dir_y == 0 else abs(1 / ray_dir_y)
+            delta_dist_x = 1e30 if ray_dir_x == 0 \
+                else math.sqrt(1 + (ray_dir_y * ray_dir_y) / (ray_dir_x * ray_dir_x))
+            delta_dist_y = 1e30 if ray_dir_y == 0 \
+                else math.sqrt(1 + (ray_dir_x * ray_dir_x) / (ray_dir_y * ray_dir_y))
 
-            step_x, side_dist_x = (-1, (p_pos_x - map_x) * delta_dist_x) if ray_dir_x < 0 \
+            step_x, side_dist_x = (-1, (p_pos_x - map_x - 0.000001) * delta_dist_x) if ray_dir_x < 0 \
                 else (1, (map_x + 1.0 - p_pos_x) * delta_dist_x)
 
-            step_y, side_dist_y = (-1, (p_pos_y - map_y) * delta_dist_y) if ray_dir_y < 0 \
+            step_y, side_dist_y = (-1, (p_pos_y - map_y - 0.000001) * delta_dist_y) if ray_dir_y < 0 \
                 else (1, (map_y + 1.0 - p_pos_y) * delta_dist_y)
 
             wall_detected = False
-            is_north_south = False
+            self.is_north_south = False
             while not wall_detected:
                 if side_dist_x < side_dist_y:
                     side_dist_x += delta_dist_x
                     map_x += step_x
-                    is_north_south = False
+                    self.is_north_south = True
                 else:
                     side_dist_y += delta_dist_y
                     map_y += step_y
-                    is_north_south = True
+                    self.is_north_south = False
 
                 if (map_x, map_y) in self.game.map.world_map:
                     wall_detected = True
 
-            if is_north_south:
+            if self.is_north_south:
                 depth = (side_dist_x - delta_dist_x)
             else:
                 depth = (side_dist_y - delta_dist_y)
@@ -68,10 +70,16 @@ class RayCasting:
             draw_start = 0
         if draw_end >= HEIGHT:
             draw_end = HEIGHT - 1
-        print('ok')
+
+        if self.is_north_south:
+            color = self.side_bright(color)
+        #print('ok')
         pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), 2)
-        print('ok')
+        #print('ok')
         # pg.draw.rect(self.game.screen, color, )
+
+    def side_bright(self, color):
+        return tuple(map(lambda x: int(x / 2), color))
 
     def update(self):
         self.ray_cast()

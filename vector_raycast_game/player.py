@@ -25,17 +25,33 @@ class Player:
         if keys[pg.K_w]:
             # print(self.map_pos)
             # print(self.pos)
-            dx += speed_cos
-            dy += speed_sin
+            dx += self.dir_x * speed
+            dy += self.dir_y * speed
+            # dx += speed_cos
+            # dy += speed_sin
         if keys[pg.K_s]:
-            dx += -speed_cos
-            dy += -speed_sin
-        if keys[pg.K_a]:
-            dx += speed_sin
-            dy += -speed_cos
-        if keys[pg.K_d]:
-            dx += -speed_sin
-            dy += speed_cos
+            dx -= self.dir_x * speed
+            dy -= self.dir_y * speed
+            # dx += -speed_cos
+            # dy += -speed_sin
+        if self.dir_x < 0 and self.dir_y < 0:
+            if keys[pg.K_a]:
+                dx -= self.dir_x * speed
+                dy += self.dir_y * speed
+            if keys[pg.K_d]:
+                dx += self.dir_x * speed
+                dy -= self.dir_y * speed
+
+            if keys[pg.K_d]:
+                dx -= self.dir_x * speed
+                dy -= self.dir_y * speed
+        else:
+            if keys[pg.K_a]:
+                dx += self.dir_x * speed
+                dy -= self.dir_y * speed
+            if keys[pg.K_d]:
+                dx -= self.dir_x * speed
+                dy += self.dir_y * speed
 
         self.check_wall_collision(dx, dy)
 
@@ -50,10 +66,9 @@ class Player:
         return (x, y) not in self.game.map.world_map
 
     def check_wall_collision(self, dx, dy):  # collisions
-        scale = PLAYER_SIZE_SCALE / self.game.delta_time
-        if self.check_wall(int(self.x + dx * scale), int(self.y)):
+        if self.check_wall(int(self.x + dx), int(self.y)):
             self.x += dx
-        if self.check_wall(int(self.x), int(self.y + dy * scale)):
+        if self.check_wall(int(self.x), int(self.y + dy)):
             self.y += dy
 
     def draw(self):
@@ -72,7 +87,15 @@ class Player:
         self.rel = pg.mouse.get_rel()[0]
         # print(f'mouse_rel:{self.rel}')
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
-        self.angle += self.rel * MOUSE_SENSITIVITY
+
+        rot_speed = self.rel * MOUSE_SENSITIVITY
+        old_dir_x = self.dir_x
+        self.dir_x = self.dir_x * math.cos(-rot_speed) - self.dir_y * math.sin(-rot_speed)
+        self.dir_y = old_dir_x * math.sin(-rot_speed) + self.dir_y * math.cos(-rot_speed)
+
+        old_plane_x = self.plane_x
+        self.plane_x = self.plane_x * math.cos(-rot_speed) - self.plane_y * math.sin(-rot_speed)
+        self.plane_y = old_plane_x * math.sin(-rot_speed) + self.plane_y * math.cos(-rot_speed)
 
     def update(self):
         self.movement()
