@@ -16,7 +16,7 @@ class Game:
 
     def __init__(self):
         # init objects
-        self.map, self.player, self.ray_casting = None, None, None
+        self.map, self.player, self.ray_casting, self.object_renderer = None, None, None, None
 
         pg.init()
         self.screen = pg.display.set_mode(RES)
@@ -34,20 +34,22 @@ class Game:
 
     def new_game(self):  # object initialization
         self.map = Map(self)
+        self.object_renderer = ObjectRenderer(self)
         self.player = Player(self)
         self.ray_casting = RayCasting(self)
 
     def update(self):
         self.ray_casting.update()
-
+        print('ok')
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
         print(self.delta_time)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
-        self.map.draw()
-        self.player.draw()
+        #self.map.draw()
+        #self.player.draw()
+        pass
 
     def check_events(self):
         for event in pg.event.get():
@@ -65,7 +67,7 @@ class Game:
                 self.update()
                 self.draw()
             except ZeroDivisionError as err:
-                print(f'{err}')
+                print(f'{err.args}')
                 continue
 
 

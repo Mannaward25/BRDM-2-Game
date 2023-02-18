@@ -12,53 +12,55 @@ class ObjectRenderer:
     def __init__(self, game):
         self.game = game
         self.screen = game.screen
-        self.wall_textures = self.load_wall_textures()
-        self.sky_image = self.get_texture('resources/textures/sky.png', (WIDTH, HALF_HEIGHT))
-        self.sky_offset = 0
-        self.blood_screen = self.get_texture('resources/textures/blood_screen.png', RES)
-        self.digit_size = 90
-        self.digit_images = [self.get_texture(f'resources/textures/digits/{i}.png',
-                                              [self.digit_size] * 2) for i in range(11)]
-        self.digits = dict(zip(map(str, range(11)), self.digit_images))
-        self.game_over_image = self.get_texture('resources/textures/game_over.png', RES)
-        self.victory_image = self.get_texture('resources/textures/win.png', RES)
-        self.doom_fire = self.game.doom_fire
+        #self.wall_textures = self.load_wall_textures()
+        self.test_wall_textures = self.test_textures()
+        # self.sky_image = self.get_texture('resources/textures/sky.png', (WIDTH, HALF_HEIGHT))
+        # self.sky_offset = 0
+        # self.blood_screen = self.get_texture('resources/textures/blood_screen.png', RES)
+        # self.digit_size = 90
+        # self.digit_images = [self.get_texture(f'resources/textures/digits/{i}.png',
+        #                                       [self.digit_size] * 2) for i in range(11)]
+        # self.digits = dict(zip(map(str, range(11)), self.digit_images))
+        # self.game_over_image = self.get_texture('resources/textures/game_over.png', RES)
+        # self.victory_image = self.get_texture('resources/textures/win.png', RES)
+        #self.doom_fire = self.game.doom_fire
 
-        self.default_textures = {
-            1: self.get_texture('resources/textures/1.png'),
-            2: self.get_texture('resources/textures/2.png'),
-            3: self.get_texture('resources/textures/3.png'),
-            4: self.get_texture('resources/textures/4.png'),
-            5: self.get_texture('resources/textures/5.png')
-        }
-
-        self.custom_textures = {
-            1: self.get_texture('resources/textures/dacha/1_right.JPG'),
-            2: self.get_texture('resources/textures/dacha/2_right.JPG'),
-            3: self.get_texture('resources/textures/dacha/3_right.JPG'),
-
-        }
+        # self.default_textures = {
+        #     1: self.get_texture('resources/textures/1.png'),
+        #     2: self.get_texture('resources/textures/2.png'),
+        #     3: self.get_texture('resources/textures/3.png'),
+        #     4: self.get_texture('resources/textures/4.png'),
+        #     5: self.get_texture('resources/textures/5.png')
+        # }
+        #
+        # self.custom_textures = {
+        #     1: self.get_texture('resources/textures/dacha/1_right.JPG'),
+        #     2: self.get_texture('resources/textures/dacha/2_right.JPG'),
+        #     3: self.get_texture('resources/textures/dacha/3_right.JPG'),
+        #
+        # }
 
     def draw(self):
-        self.doom_fire.draw()
-        self.draw_background()
-        self.render_game_objects()
-        self.draw_player_health()
+        pass
+        #self.doom_fire.draw()
+        #self.draw_background()
+        #self.render_game_objects()
+        #self.draw_player_health()
 
-    def game_over(self):
-        self.screen.blit(self.game_over_image, (0, 0))
+    # def game_over(self):
+    #     self.screen.blit(self.game_over_image, (0, 0))
+    #
+    # def victory(self):
+    #     self.screen.blit(self.victory_image, (0, 0))
 
-    def victory(self):
-        self.screen.blit(self.victory_image, (0, 0))
+    # def draw_player_health(self):
+    #     health = str(self.game.player.health)
+    #     for i, char in enumerate(health):
+    #         self.screen.blit(self.digits[char], (i * self.digit_size, 0))
+    #     self.screen.blit(self.digits['10'], ((i + 1) * self.digit_size, 0))
 
-    def draw_player_health(self):
-        health = str(self.game.player.health)
-        for i, char in enumerate(health):
-            self.screen.blit(self.digits[char], (i * self.digit_size, 0))
-        self.screen.blit(self.digits['10'], ((i + 1) * self.digit_size, 0))
-
-    def player_damage(self):
-        self.screen.blit(self.blood_screen, (0, 0))
+    # def player_damage(self):
+    #     self.screen.blit(self.blood_screen, (0, 0))
 
     def draw_background(self):
         self.sky_offset = (self.sky_offset + 4.5 * self.game.player.rel) % WIDTH
@@ -82,38 +84,47 @@ class ObjectRenderer:
         for depth, image, pos in list_of_objects:
             self.screen.blit(image, pos)
 
-    @staticmethod
-    def get_texture(path, res=(TEXTURE_SIZE, TEXTURE_SIZE)):
-        texture = pg.image.load(path).convert_alpha()
-        return pg.transform.scale(texture, res)
+    # @staticmethod
+    # def get_texture(path, res=(TEXTURE_SIZE, TEXTURE_SIZE)):
+    #     texture = pg.image.load(path).convert_alpha()
+    #     return pg.transform.scale(texture, res)
 
-    def load_wall_textures(self) -> dict:
+    # def load_wall_textures(self) -> dict:
+    #     return {
+    #         1: self.get_texture('resources/textures/dacha/1_right.JPG'),
+    #         2: self.get_texture('resources/textures/dacha/2_right.JPG'),
+    #         3: self.get_texture('resources/textures/dacha/3_right.JPG'),
+    #         4: self.get_texture('resources/textures/dacha/1_front.JPG'),
+    #         5: self.get_texture('resources/textures/dacha/2_front.JPG'),
+    #         6: self.get_texture('resources/textures/dacha/3_front.JPG'),
+    #         7: self.get_texture('resources/textures/dacha/4_front.JPG'),
+    #         8: self.get_texture('resources/textures/dacha/1_left.JPG'),
+    #         9: self.get_texture('resources/textures/dacha/2_left.JPG'),
+    #         10: self.get_texture('resources/textures/dacha/1_rear.JPG'),
+    #         11: self.get_texture('resources/textures/dacha/2_rear.JPG'),
+    #         12: self.get_texture('resources/textures/dacha/3_rear.JPG'),
+    #         13: self.get_texture('resources/textures/dacha/1_win.JPG'),
+    #         14: self.get_texture('resources/textures/dacha/1_door.JPG'),
+    #         15: self.get_texture('resources/textures/dacha/1_yard.JPG'),
+    #         16: self.get_texture('resources/textures/dacha/2_yard.JPG'),
+    #         17: self.get_texture('resources/textures/dacha/3_yard.JPG'),
+    #         18: self.get_texture('resources/textures/dacha/4_yard.JPG'),
+    #         19: self.get_texture('resources/textures/dacha/5_yard.JPG'),
+    #         20: self.get_texture('resources/textures/dacha/6_yard.JPG'),
+    #         21: self.get_texture('resources/textures/dacha/7_yard.JPG'),
+    #         22: self.get_texture('resources/textures/dacha/8_yard.JPG'),
+    #         23: self.get_texture('resources/textures/dacha/9_yard.JPG'),
+    #         24: self.get_texture('resources/textures/4.png'),
+    #         25: self.get_texture('resources/textures/3.png'),
+    #     }
+
+    def test_textures(self):
         return {
-            1: self.get_texture('resources/textures/dacha/1_right.JPG'),
-            2: self.get_texture('resources/textures/dacha/2_right.JPG'),
-            3: self.get_texture('resources/textures/dacha/3_right.JPG'),
-            4: self.get_texture('resources/textures/dacha/1_front.JPG'),
-            5: self.get_texture('resources/textures/dacha/2_front.JPG'),
-            6: self.get_texture('resources/textures/dacha/3_front.JPG'),
-            7: self.get_texture('resources/textures/dacha/4_front.JPG'),
-            8: self.get_texture('resources/textures/dacha/1_left.JPG'),
-            9: self.get_texture('resources/textures/dacha/2_left.JPG'),
-            10: self.get_texture('resources/textures/dacha/1_rear.JPG'),
-            11: self.get_texture('resources/textures/dacha/2_rear.JPG'),
-            12: self.get_texture('resources/textures/dacha/3_rear.JPG'),
-            13: self.get_texture('resources/textures/dacha/1_win.JPG'),
-            14: self.get_texture('resources/textures/dacha/1_door.JPG'),
-            15: self.get_texture('resources/textures/dacha/1_yard.JPG'),
-            16: self.get_texture('resources/textures/dacha/2_yard.JPG'),
-            17: self.get_texture('resources/textures/dacha/3_yard.JPG'),
-            18: self.get_texture('resources/textures/dacha/4_yard.JPG'),
-            19: self.get_texture('resources/textures/dacha/5_yard.JPG'),
-            20: self.get_texture('resources/textures/dacha/6_yard.JPG'),
-            21: self.get_texture('resources/textures/dacha/7_yard.JPG'),
-            22: self.get_texture('resources/textures/dacha/8_yard.JPG'),
-            23: self.get_texture('resources/textures/dacha/9_yard.JPG'),
-            24: self.get_texture('resources/textures/4.png'),
-            25: self.get_texture('resources/textures/3.png'),
+            1: GREEN,
+            2: RED,
+            3: ORANGE,
+            4: BLUE,
+            5: BLACK
         }
 
 
