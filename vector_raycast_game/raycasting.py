@@ -11,7 +11,10 @@ class RayCasting:
     def __init__(self, game):
         self.game = game
         self.screen = game.screen
-        self.textures = self.game.object_renderer.test_wall_textures
+        self.test_textures = self.game.object_renderer.test_wall_textures
+        self.textures = self.game.object_renderer.wall_textures
+        #self.screen_array = pg.surfarray.array3d(pg.Surface(RES))
+        #self.black_array = pg.surfarray.array3d(pg.Surface(RES))
         self.is_north_south = False
         self.pitch = PITCH
 
@@ -73,10 +76,10 @@ class RayCasting:
         ray_dir_x, ray_dir_y = ray_dir
 
         pos_x, pos_y = self.game.player.pos
-        draw_start = -proj_height / 2 + HALF_HEIGHT + self.pitch
-        draw_end = proj_height / 2 + HALF_HEIGHT + self.pitch
+        draw_start = int(-proj_height / 2 + HALF_HEIGHT + self.pitch)
+        draw_end = int(proj_height / 2 + HALF_HEIGHT + self.pitch)
         texture_num = self.game.map.world_map[map_pos]
-        color = self.textures[texture_num]
+        color = self.test_textures[texture_num]
 
         if draw_start < 0:
             draw_start = 0
@@ -108,7 +111,26 @@ class RayCasting:
         tex_pos = (draw_start - self.pitch - HALF_HEIGHT + proj_height / 2) * step
 
 
-        pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), DRAW_DENSE_FACTOR)
+        #texture = pg.surfarray.array3d(texture)
+
+        wall_column = self.textures[texture_num].subsurface(
+            x % TEXTURE_SIZE, 0, DRAW_DENSE_FACTOR, TEXTURE_SIZE
+        )
+        wall_column = pg.transform.scale(wall_column, (DRAW_DENSE_FACTOR, draw_end - draw_start))
+        wall_pos = (x, draw_start)
+
+        self.game.screen.blit(wall_column, wall_pos)
+        # for y in range(draw_start, draw_end, 1):
+        #     texture_y = int(tex_pos) & (TEXTURE_SIZE - 1)
+        #     tex_pos += step
+
+
+
+
+
+
+
+        #pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), DRAW_DENSE_FACTOR)
         #print('ok')
         # pg.draw.rect(self.game.screen, color, )
 
@@ -117,8 +139,14 @@ class RayCasting:
 
     def update(self):
         self.ray_cast()
+        #self.draw()
 
     def rand_color(self):
         return (rd.randint(0, 255),
                 rd.randint(0, 255),
                 rd.randint(0, 255))
+
+    def draw(self):
+        pass
+        #pg.surfarray.blit_array(self.game.screen, self.screen_array)
+

@@ -49,8 +49,13 @@ class Game:
 
     def draw(self):
         self.screen.fill(BLACK)
+        pg.draw.rect(self.screen, BLACK, (0, 0, WIDTH, HEIGHT))
+        self.ray_casting.draw()
+
+        #self.ray_casting.draw()
         #self.map.draw()
         #self.player.draw()
+
 
     def check_events(self):
         for event in pg.event.get():
