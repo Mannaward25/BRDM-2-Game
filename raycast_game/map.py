@@ -33,7 +33,6 @@ class Map:
         self.game = game
         self.mini_map = mini_map
         self.world_map = {}
-        self.open_space = {}
         self.get_map()
 
     def get_map(self):
@@ -41,8 +40,6 @@ class Map:
             for x, value in enumerate(row):
                 if value:
                     self.world_map[(x, y)] = value
-                else:
-                    self.open_space[(x, y)] = FLOOR_TEXTURE
 
     def draw(self):
         [pg.draw.rect(self.game.screen, DARK_GRAY, (pos[0] * BLOCK_SIZE, pos[1] * BLOCK_SIZE,

@@ -214,16 +214,3 @@ class RayCasting:
                 rd.randint(0, 255),
                 rd.randint(0, 255))
 
-
-class VectorRayCast:
-
-    def __init__(self, game):
-        self.game = game
-        self.raycasting_result = []
-        self.objects_to_render = []
-
-    def ray_cast(self):
-        pass
-
-    def update(self):
-        self.ray_cast()
