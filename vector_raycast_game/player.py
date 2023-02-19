@@ -31,22 +31,24 @@ class Player:
             dy += self.plane_y * speed
 
         self.check_wall_collision(dx, dy)
-        #self.print_info()
+        self.print_info()
         # control player angle using the keys
 
     def check_wall(self, x, y) -> bool:  # collisions
         return (x, y) not in self.game.map.world_map
 
     def check_wall_collision(self, dx, dy):  # collisions
-        scale = PLAYER_SIZE_SCALE / self.game.delta_time
-        if self.check_wall(int(self.x + dx), int(self.y)):
+        scale = PLAYER_SIZE_SCALE
+        if self.check_wall(int(self.x + dx * scale), int(self.y)):
             self.x += dx
-        if self.check_wall(int(self.x), int(self.y + dy)):
+        else:
+            print(int(self.x), int(self.y), 'in world map')
+        if self.check_wall(int(self.x), int(self.y + dy * scale)):
             self.y += dy
 
     def print_info(self):
-        #print(f'player_pos = pos_x: {self.x}, pos_y: {self.y}')
-        print(f'vector dir = x: {self.dir_x}; y: {self.dir_y}')
+        print(f'player_pos = pos_x: {self.x}, pos_y: {self.y}')
+        #print(f'vector dir = x: {self.dir_x}; y: {self.dir_y}')
         #print(f'plane vector = plane_x : {self.plane_x}; plane_y: {self.plane_y}')
 
     def draw(self):

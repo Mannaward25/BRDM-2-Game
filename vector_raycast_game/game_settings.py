@@ -13,7 +13,7 @@ INITIAL_DIRECTIONS = -1, 0
 PLAYER_ANGLE = 0
 PLAYER_SPEED = 0.005
 PLAYER_ROT_SPEED = 3  # rotation speed
-PLAYER_SIZE_SCALE = 1
+PLAYER_SIZE_SCALE = 5
 PLAYER_MAX_HEALTH = 100
 PLAYER_HEIGHT = 0.5  # for floor raycasting
 HALF_WIDTH = WIDTH // 2
@@ -24,6 +24,7 @@ INITIAL_PLANE = 0.0, 0.66
 FOV = 2 * math.atan2(0.66, 1.0)
 RAYS_X_NUM = WIDTH // 2
 DRAW_DENSE_FACTOR = 2
+PITCH = 100
 
 #  colors
 BLACK = (0, 0, 0)
@@ -38,7 +39,7 @@ FLOOR_COLOR = (35, 35, 35)  # 255, 204, 102, |  115, 140, 121 |  35, 35, 35
 
 # texture settings
 
-TEXTURE_SIZE = 256
+TEXTURE_SIZE = 64
 HALF_TEXTURE_SIZE = TEXTURE_SIZE // 2
 
 # mouse control

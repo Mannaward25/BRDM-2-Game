@@ -13,6 +13,7 @@ class RayCasting:
         self.screen = game.screen
         self.textures = self.game.object_renderer.test_wall_textures
         self.is_north_south = False
+        self.pitch = PITCH
 
     def ray_cast(self):
 
@@ -63,11 +64,17 @@ class RayCasting:
                 depth = (side_dist_y - delta_dist_y)
 
             project_height = int(HEIGHT / depth)
-            self.render_objects(project_height, (map_x, map_y), x)
+            object_to_render = project_height, depth, (ray_dir_x, ray_dir_y)
+            self.render_objects(object_to_render, (map_x, map_y), x)
 
-    def render_objects(self, proj_height, map_pos, x):
-        draw_start = -proj_height / 2 + HALF_HEIGHT
-        draw_end = proj_height / 2 + HALF_HEIGHT
+    def render_objects(self, obj_to_rend, map_pos, x):
+        # unpack values
+        proj_height, depth, ray_dir = obj_to_rend
+        ray_dir_x, ray_dir_y = ray_dir
+
+        pos_x, pos_y = self.game.player.pos
+        draw_start = -proj_height / 2 + HALF_HEIGHT + self.pitch
+        draw_end = proj_height / 2 + HALF_HEIGHT + self.pitch
         texture_num = self.game.map.world_map[map_pos]
         color = self.textures[texture_num]
 
@@ -79,6 +86,28 @@ class RayCasting:
         if self.is_north_south:
             color = self.side_bright(color)
         #print('ok')
+
+        # value of wall_x (offset)
+        if self.is_north_south:
+            wall_x = pos_y + depth * ray_dir_y
+        else:
+            wall_x = pos_x + depth * ray_dir_x
+        wall_x -= math.floor(wall_x)
+
+        # x coordinate of texture
+        texture_x = int(wall_x * TEXTURE_SIZE)  # TEXTURE_SIZE HERE STANDS FOR TEXTURE WIDTH (W)
+        if self.is_north_south and ray_dir_x > 0:
+            texture_x = TEXTURE_SIZE - texture_x - 1  # TEXTURE_SIZE HERE STANDS FOR TEXTURE WIDTH (W)
+        if not self.is_north_south and ray_dir_y < 0:
+            texture_x = TEXTURE_SIZE - texture_x - 1
+
+        # how much to increase the texture coordinate per screen pixel
+        step = 1.0 * TEXTURE_SIZE / proj_height
+
+        # Starting texture coordinate
+        tex_pos = (draw_start - self.pitch - HALF_HEIGHT + proj_height / 2) * step
+
+
         pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), DRAW_DENSE_FACTOR)
         #print('ok')
         # pg.draw.rect(self.game.screen, color, )
