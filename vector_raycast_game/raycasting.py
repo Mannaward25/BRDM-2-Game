@@ -19,17 +19,22 @@ class RayCasting:
         dir_x, dir_y = self.game.player.dir_values  # dir vector
         plane_x, plane_y = self.game.player.plane_dir_values  # plane vector
 
-        for x in range(WIDTH):
+        for x in range(0, WIDTH, DRAW_DENSE_FACTOR):
             p_pos_x, p_pos_y = self.game.player.pos  # player position vector
             map_x, map_y = self.game.player.map_pos  # map position
-            camera_x = (2 * x) / (WIDTH - 1)  # ratio of screen plane
-            ray_dir_x = dir_x + plane_x * camera_x
-            ray_dir_y = dir_y + plane_y * camera_x  # the same as (part of plane vector)
+            camera_x = (2*x) / (WIDTH - 1)  # ratio of screen plane
+
+            if camera_x <= 1:
+                ray_dir_x = dir_x - (plane_x - (plane_x * camera_x))
+                ray_dir_y = dir_y - (plane_y - (plane_y * camera_x))
+            else:
+                ray_dir_x = dir_x + plane_x * (camera_x - 1)
+                ray_dir_y = dir_y + plane_y * (camera_x - 1)
 
             delta_dist_x = 1e30 if ray_dir_x == 0 \
-                else math.sqrt(1 + (ray_dir_y * ray_dir_y) / (ray_dir_x * ray_dir_x))
+                else abs(1 / ray_dir_x)
             delta_dist_y = 1e30 if ray_dir_y == 0 \
-                else math.sqrt(1 + (ray_dir_x * ray_dir_x) / (ray_dir_y * ray_dir_y))
+                else abs(1 / ray_dir_y)
 
             step_x, side_dist_x = (-1, (p_pos_x - map_x - 0.000001) * delta_dist_x) if ray_dir_x < 0 \
                 else (1, (map_x + 1.0 - p_pos_x) * delta_dist_x)
@@ -57,7 +62,7 @@ class RayCasting:
             else:
                 depth = (side_dist_y - delta_dist_y)
 
-            project_height = HEIGHT / depth
+            project_height = int(HEIGHT / depth)
             self.render_objects(project_height, (map_x, map_y), x)
 
     def render_objects(self, proj_height, map_pos, x):
@@ -74,7 +79,7 @@ class RayCasting:
         if self.is_north_south:
             color = self.side_bright(color)
         #print('ok')
-        pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), 2)
+        pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), DRAW_DENSE_FACTOR)
         #print('ok')
         # pg.draw.rect(self.game.screen, color, )
 
@@ -88,17 +93,3 @@ class RayCasting:
         return (rd.randint(0, 255),
                 rd.randint(0, 255),
                 rd.randint(0, 255))
-
-
-class VectorRayCast:
-
-    def __init__(self, game):
-        self.game = game
-        self.raycasting_result = []
-        self.objects_to_render = []
-
-    def ray_cast(self):
-        pass
-
-    def update(self):
-        self.ray_cast()

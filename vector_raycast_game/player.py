@@ -11,65 +11,43 @@ class Player:
         self.x, self.y = PLAYER_POS
         self.dir_x, self.dir_y = INITIAL_DIRECTIONS
         self.plane_x, self.plane_y = INITIAL_PLANE
-        self.angle = PLAYER_ANGLE
 
     def movement(self):
-        sin_a = np.sin(self.angle)
-        cos_a = np.cos(self.angle)
         dx, dy = 0, 0
         speed = PLAYER_SPEED * self.game.delta_time
-        speed_sin = speed * sin_a
-        speed_cos = speed * cos_a
 
         keys = pg.key.get_pressed()
         if keys[pg.K_w]:
-            # print(self.map_pos)
-            # print(self.pos)
             dx += self.dir_x * speed
             dy += self.dir_y * speed
-            # dx += speed_cos
-            # dy += speed_sin
         if keys[pg.K_s]:
             dx -= self.dir_x * speed
             dy -= self.dir_y * speed
-            # dx += -speed_cos
-            # dy += -speed_sin
-        if self.dir_x < 0 and self.dir_y < 0:
-            if keys[pg.K_a]:
-                dx -= self.dir_x * speed
-                dy += self.dir_y * speed
-            if keys[pg.K_d]:
-                dx += self.dir_x * speed
-                dy -= self.dir_y * speed
-
-            if keys[pg.K_d]:
-                dx -= self.dir_x * speed
-                dy -= self.dir_y * speed
-        else:
-            if keys[pg.K_a]:
-                dx += self.dir_x * speed
-                dy -= self.dir_y * speed
-            if keys[pg.K_d]:
-                dx -= self.dir_x * speed
-                dy += self.dir_y * speed
+        if keys[pg.K_a]:
+            dx -= self.plane_x * speed
+            dy -= self.plane_y * speed
+        if keys[pg.K_d]:
+            dx += self.plane_x * speed
+            dy += self.plane_y * speed
 
         self.check_wall_collision(dx, dy)
-
+        #self.print_info()
         # control player angle using the keys
-        # if keys[pg.K_LEFT]:
-        #     self.angle -= PLAYER_ROT_SPEED * self.game.delta_time
-        # if keys[pg.K_RIGHT]:
-        #     self.angle += PLAYER_ROT_SPEED * self.game.delta_time
-        self.angle %= math.tau
 
     def check_wall(self, x, y) -> bool:  # collisions
         return (x, y) not in self.game.map.world_map
 
     def check_wall_collision(self, dx, dy):  # collisions
+        scale = PLAYER_SIZE_SCALE / self.game.delta_time
         if self.check_wall(int(self.x + dx), int(self.y)):
             self.x += dx
         if self.check_wall(int(self.x), int(self.y + dy)):
             self.y += dy
+
+    def print_info(self):
+        #print(f'player_pos = pos_x: {self.x}, pos_y: {self.y}')
+        print(f'vector dir = x: {self.dir_x}; y: {self.dir_y}')
+        #print(f'plane vector = plane_x : {self.plane_x}; plane_y: {self.plane_y}')
 
     def draw(self):
         # pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),
