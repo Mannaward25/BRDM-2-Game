@@ -93,17 +93,17 @@ class Player:
 
     def check_wall_collision(self, dx, dy):  # collisions  # +
         scale = PLAYER_SIZE_SCALE / self.game.delta_time  # +
-        if self.check_wall(int(self.x + dx * scale), int(self.y)):
-            self.x += dx
-        if self.check_wall(int(self.x), int(self.y + dy * scale)):
-            self.y += dy
+        if self.check_wall(int(self.x + dx + scale), int(self.y)):  # +
+            self.x += dx  # +
+        if self.check_wall(int(self.x), int(self.y + dy + scale)):  # +
+            self.y += dy  # +
 
     def draw(self):  # +
-        pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),
-                     (self.x * BLOCK_SIZE + WIDTH * math.cos(self.angle),
-                      self.y * BLOCK_SIZE + WIDTH * math.sin(self.angle)), 2)
+        pg.draw.line(self.game.screen, YELLOW, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE),  # +
+                     (self.x * BLOCK_SIZE + WIDTH * math.cos(self.angle),  # +
+                      self.y * BLOCK_SIZE + WIDTH * math.sin(self.angle)), 2)  # +
 
-        pg.draw.circle(self.game.screen, GREEN, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE), 15)
+        pg.draw.circle(self.game.screen, GREEN, (self.x * BLOCK_SIZE, self.y * BLOCK_SIZE), 15)  # +
 
     def mouse_control(self):
         mx, my = pg.mouse.get_pos()
@@ -114,7 +114,7 @@ class Player:
         self.rel = pg.mouse.get_rel()[0]
         # print(f'mouse_rel:{self.rel}')
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
-        self.no_tau_angle += self.rel * MOUSE_SENSITIVITY
+        #self.no_tau_angle += self.rel * MOUSE_SENSITIVITY
         self.angle += self.rel * MOUSE_SENSITIVITY
 
     def update(self):  # +

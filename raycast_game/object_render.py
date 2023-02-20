@@ -69,8 +69,8 @@ class ObjectRenderer:
             self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i - self.sky_offset, 0 - HALF_HEIGHT))
             self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i + WIDTH - self.sky_offset,
                                               0 - HALF_HEIGHT))
-        self.screen.blit(self.sky_image, (-self.sky_offset, 0))
-        self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
+        # self.screen.blit(self.sky_image, (-self.sky_offset, 0))
+        # self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
 
         # floor
         pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))

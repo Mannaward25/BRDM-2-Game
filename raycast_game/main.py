@@ -45,7 +45,7 @@ class Game:  # +
         self.player = Player(self)  # +
         self.doom_fire = DoomFire(self)
         self.object_renderer = ObjectRenderer(self)
-        self.mode7 = Mode7(self)
+        #self.mode7 = Mode7(self)
         self.raycasting = RayCasting(self)  # +
 
         # self.static_sprite = SpriteObject(self) # old way of rendering sprite objects
@@ -68,7 +68,7 @@ class Game:  # +
         # self.animated_sprite.update()
         self.object_handler.update() # working
         self.weapon.update()  # working
-        #self.doom_fire.update()  # working
+        self.doom_fire.update()  # working
 
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
