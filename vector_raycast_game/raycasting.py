@@ -20,7 +20,7 @@ class RayCasting:
 
     def ray_cast(self):
 
-        dir_x, dir_y = self.game.player.dir_values  # dir vector
+        dir_x, dir_y = self.game.player.dir_values  # dir vector -  angle analog
         plane_x, plane_y = self.game.player.plane_dir_values  # plane vector
 
         for x in range(0, WIDTH, DRAW_DENSE_FACTOR):
