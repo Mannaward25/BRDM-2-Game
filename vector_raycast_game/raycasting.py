@@ -48,17 +48,28 @@ class RayCasting:
 
             wall_detected = False
             self.is_north_south = False
+            x_offset, y_offset, offset = 0, 0, 0
             while not wall_detected:
                 if side_dist_x < side_dist_y:
                     side_dist_x += delta_dist_x
+                    x_offset = side_dist_x
                     map_x += step_x
                     self.is_north_south = True
                 else:
                     side_dist_y += delta_dist_y
+                    y_offset = side_dist_y
                     map_y += step_y
                     self.is_north_south = False
 
                 if (map_x, map_y) in self.game.map.world_map:
+
+                    if self.is_north_south:  # set up texturing system
+                        x_offset %= 1
+                        offset = (1 - x_offset) if ray_dir_y > 0 else x_offset
+                    else:
+                        y_offset %= 1
+                        offset = y_offset if ray_dir_x > 0 else (1 - y_offset)
+
                     wall_detected = True
 
             if self.is_north_south:
