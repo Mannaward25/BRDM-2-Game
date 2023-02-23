@@ -31,7 +31,7 @@ class Player:
             dy += self.plane_y * speed
 
         self.check_wall_collision(dx, dy)
-        self.print_info()
+        #self.print_info()
         # control player angle using the keys
 
     def check_wall(self, x, y) -> bool:  # collisions
@@ -42,7 +42,7 @@ class Player:
         if self.check_wall(int(self.x + dx * scale), int(self.y)):
             self.x += dx
         else:
-            print(int(self.x), int(self.y), 'in world map')
+            pass
         if self.check_wall(int(self.x), int(self.y + dy * scale)):
             self.y += dy
 
