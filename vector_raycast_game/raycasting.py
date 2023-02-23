@@ -26,9 +26,10 @@ class RayCasting:
         # ray_angle = math.atan2(dir_y, dir_x)
         # sin_a = math.sin(ray_angle)
         # cos_a = math.cos(ray_angle)
+        p_pos_x, p_pos_y = self.game.player.pos  # player position vector
+        player_angle = math.atan2(dir_y, dir_x)
 
         for x in range(0, WIDTH, DRAW_DENSE_FACTOR):
-            p_pos_x, p_pos_y = self.game.player.pos  # player position vector
             map_x, map_y = self.game.player.map_pos  # map position
             camera_x = (2*x) / (WIDTH - 1)  # ratio of screen plane
 
@@ -48,16 +49,16 @@ class RayCasting:
             delta_dist_y = 1e30 if ray_dir_y == 0 \
                 else abs(1 / ray_dir_y)
 
-            # delta_dist_x = 1e30 if ray_dir_x == 0 \
-            #     else math.sqrt(1 + (ray_dir_y * ray_dir_y) / (ray_dir_x * ray_dir_x))
-            # delta_dist_y = 1e30 if ray_dir_y == 0 \
-            #     else math.sqrt(1 + (ray_dir_x * ray_dir_x) / (ray_dir_y * ray_dir_y))
+            delta_dist_x_raw = 1e30 if ray_dir_x == 0 \
+                else math.sqrt(1 + (ray_dir_y * ray_dir_y) / (ray_dir_x * ray_dir_x))
+            delta_dist_y_raw = 1e30 if ray_dir_y == 0 \
+                else math.sqrt(1 + (ray_dir_x * ray_dir_x) / (ray_dir_y * ray_dir_y))
 
-            # side_dist_x_raw = ((p_pos_x - map_x - 0.000001) * delta_dist_x_raw) if ray_dir_x < 0 \
-            #     else (map_x + 1.0 - p_pos_x) * delta_dist_x_raw
-            #
-            # side_dist_y_raw = ((p_pos_y - map_y - 0.000001) * delta_dist_y_raw) if ray_dir_y < 0 \
-            #     else ((map_y + 1.0 - p_pos_y) * delta_dist_y_raw)
+            side_dist_x_raw = ((p_pos_x - map_x - 0.000001) * delta_dist_x_raw) if ray_dir_x < 0 \
+                else (map_x + 1 - p_pos_x) * delta_dist_x_raw
+
+            side_dist_y_raw = ((p_pos_y - map_y - 0.000001) * delta_dist_y_raw) if ray_dir_y < 0 \
+                else ((map_y + 1 - p_pos_y) * delta_dist_y_raw)
 
             step_x, side_dist_x, dist_x_vert = (-1, ((p_pos_x - map_x - 0.000001) * delta_dist_x),
                                                 map_x - 0.000001) if ray_dir_x < 0 \
@@ -73,12 +74,12 @@ class RayCasting:
             while not wall_detected:
                 if side_dist_x < side_dist_y:
                     side_dist_x += delta_dist_x
-
+                    side_dist_x_raw += delta_dist_x_raw
                     map_x += step_x
                     self.is_north_south = True
                 else:
                     side_dist_y += delta_dist_y
-
+                    side_dist_y_raw += delta_dist_y_raw
                     map_y += step_y
                     self.is_north_south = False
 
@@ -86,23 +87,28 @@ class RayCasting:
 
                     if self.is_north_south:  # set up texturing system
                         #delta_x = (side_dist_x - delta_dist_x + plane_x) * cos_a
-                        delta_y = (side_dist_x - delta_dist_x) * sin_a
-
+                        #delta_y = (side_dist_x - delta_dist_x) * sin_a
+                        delta_x = (side_dist_y_raw - delta_dist_y_raw) * cos_a
+                        delta_y = (side_dist_x_raw - delta_dist_x_raw) * sin_a
                         x_offset = delta_y
-                        #x_offset = delta_x
                         x_offset %= 1
-
+                        offset = x_offset
                         offset = (1 - x_offset) if sin_a > 0 else x_offset
+
+                        if x == 900 or x == WIDTH - 2:
+                            print(f'sn | ray number: {x} | map_pos: [{map_x}; {map_y}] | p_pos: [{p_pos_x + delta_x}; {p_pos_y + delta_y}]')
                     else:
-                        delta_x = (side_dist_y - delta_dist_y) * cos_a
+                        #delta_x = (side_dist_y - delta_dist_y) * cos_a
                         #delta_y = (side_dist_y - delta_dist_y + plane_y) * sin_a
-
+                        delta_x = (side_dist_y_raw - delta_dist_y_raw) * cos_a
+                        delta_y = (side_dist_x_raw - delta_dist_x_raw) * sin_a
                         y_offset = delta_x
-                        #y_offset = delta_y
                         y_offset %= 1
-
+                        offset = y_offset
                         offset = y_offset if cos_a > 0 else (1 - y_offset)
 
+                        if x == 900 or x == WIDTH - 2:
+                            print(f'ew | ray number: {x} | map_pos: [{map_x}; {map_y}] | p_pos: [{p_pos_x + delta_x}; {p_pos_y + delta_y}]')
                     wall_detected = True
 
             if self.is_north_south:
@@ -117,9 +123,7 @@ class RayCasting:
     def render_objects(self, obj_to_rend, map_pos, x, offset):
         # unpack values
         proj_height, depth, ray_dir = obj_to_rend
-        ray_dir_x, ray_dir_y = ray_dir
 
-        pos_x, pos_y = self.game.player.pos
         draw_start = int(-proj_height / 2 + HALF_HEIGHT + self.pitch)
         draw_end = int(proj_height / 2 + HALF_HEIGHT + self.pitch)
         texture_num = self.game.map.world_map[map_pos]
@@ -132,46 +136,14 @@ class RayCasting:
 
         if self.is_north_south:
             color = self.side_bright(color)
-        #print('ok')
-
-        # value of wall_x (offset)
-        if self.is_north_south:
-            wall_x = pos_y + depth * ray_dir_y
-        else:
-            wall_x = pos_x + depth * ray_dir_x
-        wall_x -= math.floor(wall_x)
-
-        # x coordinate of texture
-        texture_x = int(wall_x * TEXTURE_SIZE)  # TEXTURE_SIZE HERE STANDS FOR TEXTURE WIDTH (W)
-        if self.is_north_south and ray_dir_x > 0:
-            texture_x = TEXTURE_SIZE - texture_x - 1  # TEXTURE_SIZE HERE STANDS FOR TEXTURE WIDTH (W)
-        if not self.is_north_south and ray_dir_y < 0:
-            texture_x = TEXTURE_SIZE - texture_x - 1
-
-        # how much to increase the texture coordinate per screen pixel
-        step = 1.0 * TEXTURE_SIZE / proj_height
-
-        # Starting texture coordinate
-        tex_pos = (draw_start - self.pitch - HALF_HEIGHT + proj_height / 2) * step
-
-
-        #texture = pg.surfarray.array3d(texture)
 
         wall_column = self.textures[texture_num].subsurface(
             offset * (TEXTURE_SIZE - DRAW_DENSE_FACTOR), 0, DRAW_DENSE_FACTOR, TEXTURE_SIZE
         )
         wall_column = pg.transform.scale(wall_column, (DRAW_DENSE_FACTOR, draw_end - draw_start))
-        wall_pos = (x, draw_start)
+        wall_pos = (x * DRAW_DENSE_FACTOR, draw_start)
 
         self.game.screen.blit(wall_column, wall_pos)
-        # for y in range(draw_start, draw_end, 1):
-        #     texture_y = int(tex_pos) & (TEXTURE_SIZE - 1)
-        #     tex_pos += step
-
-
-        #pg.draw.line(self.screen, color, (x, draw_start), (x, draw_end), DRAW_DENSE_FACTOR)
-        #print('ok')
-        # pg.draw.rect(self.game.screen, color, )
 
     def side_bright(self, color):
         return tuple(map(lambda x: int(x / 2), color))
