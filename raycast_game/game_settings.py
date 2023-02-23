@@ -1,25 +1,25 @@
 import math
 
 #  BLOCK SIZE
-BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)
+BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)  # +
 WEAPON_SCALE = 0.4  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 #  window settings
-RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)
-FPS = 60
+RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)  # +
+FPS = 60  # +
 
 #  game settings
-PLAYER_POS = 1.5, 2.8
-PLAYER_ANGLE = 0
-PLAYER_SPEED = 0.1
-PLAYER_ROT_SPEED = 0.052  # rotation speed
+PLAYER_POS = 1.5, 2.8  # +
+PLAYER_ANGLE = 0  # +
+PLAYER_SPEED = 0.004  # +
+PLAYER_ROT_SPEED = 0.002  # rotation speed  # +
 PLAYER_SIZE_SCALE = 5
 PLAYER_MAX_HEALTH = 100
 PLAYER_HEIGHT = 0.5  # for floor raycasting
-HALF_WIDTH = WIDTH // 2
-HALF_HEIGHT = HEIGHT // 2
+HALF_WIDTH = WIDTH // 2  # +
+HALF_HEIGHT = HEIGHT // 2  # +
 
 # Raycasting settings
-FOV = math.pi / 3
+FOV = math.pi / 3  # +
 DEG_FOV = 60
 HALF_DEG_FOV = DEG_FOV // 2
 HALF_FOV = FOV / 2

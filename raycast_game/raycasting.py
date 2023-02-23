@@ -17,11 +17,11 @@ class RayCasting:
         self.project_height = 0
 
         #  floor params
-        self.floor_texture = self.game.mode7.floor_text
-        self.texture_size = self.game.mode7.texture_size
-        self.floor_array = self.game.mode7.floor_array
-        self.screen_array = self.game.mode7.screen_array
-        self.mod = HALF_HEIGHT / DEG_FOV  # FOV 60 deg
+        # self.floor_texture = self.game.mode7.floor_text
+        # self.texture_size = self.game.mode7.texture_size
+        # self.floor_array = self.game.mode7.floor_array
+        # self.screen_array = self.game.mode7.screen_array
+        # self.mod = HALF_HEIGHT / DEG_FOV  # FOV 60 deg
 
     def get_objects_to_render(self):
         self.objects_to_render = []
@@ -107,9 +107,9 @@ class RayCasting:
                 y_vert %= 1
                 offset = y_vert if cos_a > 0 else (1 - y_vert)
 
-            # pg.draw.line(self.game.screen, YELLOW, (BLOCK_SIZE * ox, BLOCK_SIZE * oy),
-            #              (BLOCK_SIZE * ox + BLOCK_SIZE * depth * cos_a,
-            #               BLOCK_SIZE * oy + BLOCK_SIZE * depth * sin_a), 2)  #  2D raycasting
+            # pg.draw.line(self.game.screen, YELLOW, (BLOCK_SIZE * ox, BLOCK_SIZE * oy),  # +
+            #              (BLOCK_SIZE * ox + BLOCK_SIZE * depth * cos_a,  # +
+            #               BLOCK_SIZE * oy + BLOCK_SIZE * depth * sin_a), 2)  #  2D raycasting  # +
 
             # remove fishbowl effect
             depth *= math.cos(self.game.player.angle - ray_angle)
@@ -123,86 +123,11 @@ class RayCasting:
             #              (ray * SCALE, HALF_HEIGHT - proj_height // 2, SCALE, proj_height))
             # ----------------------------------
             # new way with textures
-            # floor casting
-            #self.floor_ray_cast(ray, (ox, oy), ray_angle)
+
             # raycasting result
             self.raycasting_result.append((depth, proj_height, texture, offset))
 
-            # self.game.mode7.screen_array = self.game.mode7.render_frame(
-            #     self.game.mode7.floor_array,
-            #     self.game.mode7.screen_array,
-            #     self.game.mode7.texture_size,
-            #     (ox, oy),
-            #     ray_angle
-            # )
-
             ray_angle += DELTA_ANGLE
-
-    @staticmethod
-    @njit(fastmath=True, parallel=True)
-    def floor_render(ray_x, screen_array, floor_array,
-                     texture_size, pos, angle):
-        player_x, player_y = pos
-        text_w, text_h = texture_size[0], texture_size[1]
-        ray_x = ray_x * 2
-
-        sin = math.sin(angle)
-        cos = math.cos(angle)
-
-        for ray_y in range(HALF_HEIGHT, HEIGHT, 2):
-            # x, y, z
-            x = HALF_WIDTH - ray_x
-            y = ray_y + FOCAL_LEN
-            z = ray_y - HALF_HEIGHT + 0.001
-
-            # rotation
-            rx = ((x * cos) - y * sin)
-            ry = (x * sin + y * cos)
-
-            # projection
-            floor_x = (rx / z - player_y) * MODE_SEVEN_SCALE
-            floor_y = (ry / z + player_x) * MODE_SEVEN_SCALE
-
-            # floor pos and color
-            floor_pos = int(floor_x % text_w), int(floor_y % text_h)
-            floor_col = floor_array[floor_pos]
-
-            # fill screen
-            screen_array[ray_x, ray_y] = floor_col
-
-        return screen_array
-
-    def floor_ray_cast(self, rays, pos, ray_angle):
-        player_angle = self.game.player.angle
-        self.game.mode7.screen_array = self.floor_render(rays, self.screen_array, self.floor_array,
-                                                         self.texture_size, pos, player_angle)
-
-    # @staticmethod
-    # @njit(fastmath=True, parallel=True)
-    # def floor_render(ray_x, screen_array, floor_array, texture_size, pos, angle, ray_angle, mod):
-    #     player_x, player_y = pos
-    #     text_w, text_h = texture_size[0], texture_size[1]
-    #     ray_x = ray_x * 2
-    #
-    #     rot_i = angle + ray_angle
-    #     # sin = math.sin(angle)
-    #     # cos = math.cos(angle)
-    #     sin = np.sin(rot_i)
-    #     cos = np.cos(rot_i)
-    #     cos2 = np.cos(np.deg2rad(ray_x / mod - HALF_DEG_FOV))
-    #
-    #     for ray_y in range(HALF_HEIGHT, HEIGHT - 1, 2):
-    #         # x, y, z
-    #         n = (HALF_HEIGHT / HALF_HEIGHT - ray_y) / cos2
-    #         floor_x, floor_y = player_x + cos * n, player_y + sin * n
-    #         # floor pos and color
-    #         floor_pos = int(floor_x * 2 % text_w), int(floor_y * 2 % text_h)
-    #         floor_col = floor_array[floor_pos]
-    #
-    #         # fill screen
-    #         screen_array[ray_x, ray_y] = floor_col
-    #
-    #     return screen_array
 
     def update(self):
         self.ray_cast()
@@ -214,16 +139,3 @@ class RayCasting:
                 rd.randint(0, 255),
                 rd.randint(0, 255))
 
-
-class VectorRayCast:
-
-    def __init__(self, game):
-        self.game = game
-        self.raycasting_result = []
-        self.objects_to_render = []
-
-    def ray_cast(self):
-        pass
-
-    def update(self):
-        self.ray_cast()
