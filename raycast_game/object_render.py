@@ -73,7 +73,7 @@ class ObjectRenderer:  # +
         self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))  # simple sky
 
         # floor
-        pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
+        #pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
 
     def render_game_objects(self):
         list_of_objects = sorted(self.game.raycasting.objects_to_render,  # find out
@@ -200,26 +200,12 @@ class Mode7:
         self.textures = self.game.object_renderer.wall_textures
         self.floor_text = self.textures[FLOOR_TEXTURE]
         self.texture_size = self.floor_text.get_size()
-        self.hor_texture_rays = self.texture_size[0]
-        self.hor_texture_rays = 120
-
-        self.vert_texture_rays = self.texture_size[1]
-
-        self.vert_texture_rays_half = 100
-        self.delta_hor_ray = FOV / self.hor_texture_rays
 
         self.floor_array = pg.surfarray.array3d(self.floor_text)
-        self.test_frame = np.random.uniform(0, 1, (self.hor_texture_rays, self.vert_texture_rays_half * 2, 3))
 
         self.player_pos = self.game.player.x, self.game.player.y
         self.player_ang = self.game.player.angle
         self.screen_array = pg.surfarray.array3d(pg.Surface(RES))
-
-        # lame way
-        self.mod = self.hor_texture_rays / math.ceil(math.degrees(FOV))
-        self.mod = 120 / 60
-        self.surf = 0
-        self.key = ''
 
     def get_player_pos(self):
         self.player_pos = self.game.player.x, self.game.player.y
@@ -227,60 +213,11 @@ class Mode7:
     def get_player_ang(self):
         self.player_ang = self.game.player.angle
 
-    def define_pressed_key(self):  # unused
-        keys = pg.key.get_pressed()
-        if keys[pg.K_w]:
-            self.key = 'w'
-        if keys[pg.K_s]:
-            self.key = 's'
-        if keys[pg.K_a]:
-            self.key = 'a'
-        if keys[pg.K_d]:
-            self.key = 'd'
-
     def update(self):
         self.get_player_ang()
-        #time = self.game.time
-        #pos = np.array([time, 0])
-        #angle = np.sin(time * 0.3)
-        self.define_pressed_key()
-        #self.test_rendering_parameters()
-
-            #sin = round(math.sin(self.player_ang), 3)
-            #cos = round(math.cos(self.player_ang), 3)
-            #print(f'player pos: {self.player_pos}; sin: {sin} cos:{cos}')
-            #print(f'angle: {round(self.player_ang, 3)}')
-        pos=''
+        self.get_player_pos()
         self.screen_array = self.render_frame(self.floor_array, self.screen_array,
-                                              self.texture_size, self.game.player.pos, self.player_ang)
-        #self.mode_seven_ray_cast()
-
-        
-    def mode_seven_ray_cast(self):  # unused
-        pos_x, pos_y = self.game.player.pos
-        pos_x -= 1.5
-        pos_y -= 2.8
-        self.get_player_ang()
-
-        # ray_angle = self.player_ang - HALF_FOV + 0.00001
-        for ray_h in range(self.hor_texture_rays):
-            ray_angle = self.player_ang + np.deg2rad(ray_h / self.mod - 30)
-            #ray_angle += self.delta_hor_ray
-            sin, cos = np.sin(ray_angle), np.cos(ray_angle)
-            cos2 = np.cos(np.deg2rad(ray_h / self.mod - 30))
-            #cos2 = math.cos(self.player_ang - ray_angle)
-
-            for ray_v in range(self.vert_texture_rays_half):
-                n = (self.vert_texture_rays_half / (self.vert_texture_rays_half - ray_v)) / cos2
-                dx, dy = pos_x + cos * n, pos_y + sin * pos_y
-
-                floor_x, floor_y = int(dx * 256 % 100 - 1), int(dy * 256 % 100 - 1)
-                self.test_frame[ray_h][self.vert_texture_rays_half*2 - ray_v - 1] = self.floor_array[floor_x][floor_y]
-
-                # if int(dx) % 2 == int(dy) % 2:
-                #     self.test_frame[ray_h][self.vert_texture_rays - ray_v - 1] = [0, 0, 0]
-                # else:
-                #     self.test_frame[ray_h][self.vert_texture_rays - ray_v - 1] = [1, 1, 1]
+                                              self.texture_size, self.player_pos, self.player_ang)
 
     @staticmethod
     @njit(fastmath=True, parallel=True)  # unused
@@ -289,7 +226,7 @@ class Mode7:
         sin, cos = math.sin(angle), math.cos(angle)
 
         # iterating over screen array
-        for ix in range(0, WIDTH, 2):
+        for ix in range(0, WIDTH, 1):
             for jy in range(HALF_HEIGHT, HEIGHT, 2):
                 # x, y, z
                 x = HALF_WIDTH - ix
@@ -300,8 +237,8 @@ class Mode7:
                 ry = (x * sin + y * cos)
                 # projection
 
-                floor_x = (rx / z - pos[1]) * MODE_SEVEN_SCALE
-                floor_y = (ry / z + pos[0]) * MODE_SEVEN_SCALE
+                floor_x = (rx / z - pos[1] * 2) * MODE_SEVEN_SCALE
+                floor_y = (ry / z + pos[0] * 2) * MODE_SEVEN_SCALE
 
                 # floor pos and color
                 floor_pos = int(floor_x % texture_size[0]), \
@@ -315,7 +252,3 @@ class Mode7:
 
     def draw(self):
         pg.surfarray.blit_array(self.game.screen, self.screen_array)
-
-        # self.game.screen.blit(self.surf, (0, 0))
-        # self.surf = pg.surfarray.make_surface(self.test_frame * 255)
-        # self.surf = pg.transform.scale(self.surf, RES)

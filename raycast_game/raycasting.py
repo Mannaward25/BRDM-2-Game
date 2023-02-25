@@ -11,6 +11,7 @@ class RayCasting:  # +
     def __init__(self, game):  # +
         self.game = game  # +
         self.raycasting_result = []  # +
+        self.screen = self.game.screen
         self.objects_to_render = []  # +
         self.textures = self.game.object_renderer.wall_textures  # +
         self.depth = 1
@@ -122,9 +123,26 @@ class RayCasting:  # +
 
             ray_angle += DELTA_ANGLE
 
+    def floor_casting(self):
+        floor_text = self.textures[3]
+
+        for ix in range(WIDTH):
+
+            for jy in range(HALF_HEIGHT, HEIGHT, SCALE):
+                x = ix
+                y = jy + FOCAL_LEN
+                z = jy + 0.000001
+
+                px = x / z
+                py = y / z
+
+                floor_row = floor_text.subsurface(0, jy, TEXTURE_SIZE, jy)
+
+
     def update(self):
         self.ray_cast()
         self.get_objects_to_render()
+        #self.floor_casting()
         #self.game.mode7.draw()  # THERE IS FLOOR RENDERING
 
     def rand_color(self):
