@@ -43,8 +43,9 @@ class Game:  # +
     def new_game(self):  # +
         self.map = Map(self)  # +
         self.player = Player(self)  # +
-        self.doom_fire = DoomFire(self)
-        self.object_renderer = ObjectRenderer(self)
+
+        #self.doom_fire = DoomFire(self)
+        self.object_renderer = ObjectRenderer(self)  # +
         #self.mode7 = Mode7(self)
         self.raycasting = RayCasting(self)  # +
 
@@ -66,16 +67,16 @@ class Game:  # +
         self.raycasting.update()  # working
         # self.static_sprite.update()
         # self.animated_sprite.update()
-        self.object_handler.update() # working
+        #self.object_handler.update() # working
         self.weapon.update()  # working
-        self.doom_fire.update()  # working
+        #self.doom_fire.update()  # working
 
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
-        #self.screen.fill(BLACK)
+        self.screen.fill(BLACK)
         #self.mode7.draw()  # working
         self.object_renderer.draw()
         self.weapon.draw()

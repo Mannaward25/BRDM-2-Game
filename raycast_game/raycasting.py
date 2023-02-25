@@ -6,24 +6,17 @@ import random as rd
 from game_settings import *
 
 
-class RayCasting:
+class RayCasting:  # +
 
-    def __init__(self, game):
-        self.game = game
-        self.raycasting_result = []
-        self.objects_to_render = []
-        self.textures = self.game.object_renderer.wall_textures
+    def __init__(self, game):  # +
+        self.game = game  # +
+        self.raycasting_result = []  # +
+        self.objects_to_render = []  # +
+        self.textures = self.game.object_renderer.wall_textures  # +
         self.depth = 1
         self.project_height = 0
 
-        #  floor params
-        # self.floor_texture = self.game.mode7.floor_text
-        # self.texture_size = self.game.mode7.texture_size
-        # self.floor_array = self.game.mode7.floor_array
-        # self.screen_array = self.game.mode7.screen_array
-        # self.mod = HALF_HEIGHT / DEG_FOV  # FOV 60 deg
-
-    def get_objects_to_render(self):
+    def get_objects_to_render(self):  # +
         self.objects_to_render = []
         for ray, values in enumerate(self.raycasting_result):
             depth, proj_height, texture, offset = values
@@ -47,12 +40,12 @@ class RayCasting:
 
             self.objects_to_render.append((depth, wall_column, wall_pos))
 
-    def ray_cast(self):
-        self.raycasting_result = []  # clearing every time method has been called
+    def ray_cast(self):  # +
+        self.raycasting_result = []  # clearing every time method has been called  # +
 
         ox, oy = self.game.player.pos
         x_map, y_map = self.game.player.map_pos
-        texture_vert, texture_hor = 1, 1
+        texture_vert, texture_hor = 1, 1  # +
 
         ray_angle = self.game.player.angle - HALF_FOV + 0.0001
         for ray in range(NUM_RAYS):
@@ -71,7 +64,7 @@ class RayCasting:
             for i in range(MAX_DEPTH):
                 tile_hor = int(x_hor), int(y_hor)
                 if tile_hor in self.game.map.world_map:
-                    texture_hor = self.game.map.world_map[tile_hor]
+                    texture_hor = self.game.map.world_map[tile_hor]  # +
                     break
 
                 x_hor += dx
@@ -90,7 +83,7 @@ class RayCasting:
             for i in range(MAX_DEPTH):
                 tile_vert = int(x_vert), int(y_vert)
                 if tile_vert in self.game.map.world_map:
-                    texture_vert = self.game.map.world_map[tile_vert]
+                    texture_vert = self.game.map.world_map[tile_vert]  # +
                     break
 
                 x_vert += dx
@@ -99,11 +92,11 @@ class RayCasting:
 
             # depth, texture, offset
             if depth_hor < depth_vert:
-                depth, texture = depth_hor, texture_hor
+                depth, texture = depth_hor, texture_hor  # +
                 x_hor %= 1
                 offset = (1 - x_hor) if sin_a > 0 else x_hor
             else:
-                depth, texture = depth_vert, texture_vert
+                depth, texture = depth_vert, texture_vert  # +
                 y_vert %= 1
                 offset = y_vert if cos_a > 0 else (1 - y_vert)
 

@@ -1,18 +1,18 @@
 import math
 
-import pygame as pg
-from game_settings import *
+import pygame as pg  # +
+from game_settings import *  # +
 from pygame import gfxdraw
 from random import randint, shuffle
 from numba import njit, prange
 import numpy as np
 
 
-class ObjectRenderer:
-    def __init__(self, game):
-        self.game = game
-        self.screen = game.screen
-        self.wall_textures = self.load_wall_textures()
+class ObjectRenderer:  # +
+    def __init__(self, game):  # +
+        self.game = game  # +
+        self.screen = game.screen  # +
+        self.wall_textures = self.load_wall_textures()  # +
         self.sky_image = self.get_texture('resources/textures/sky.png', (WIDTH, HALF_HEIGHT))
         self.sky_offset = 0
         self.blood_screen = self.get_texture('resources/textures/blood_screen.png', RES)
@@ -22,7 +22,7 @@ class ObjectRenderer:
         self.digits = dict(zip(map(str, range(11)), self.digit_images))
         self.game_over_image = self.get_texture('resources/textures/game_over.png', RES)
         self.victory_image = self.get_texture('resources/textures/win.png', RES)
-        self.doom_fire = self.game.doom_fire
+        #self.doom_fire = self.game.doom_fire
 
         self.default_textures = {
             1: self.get_texture('resources/textures/1.png'),
@@ -40,7 +40,7 @@ class ObjectRenderer:
         }
 
     def draw(self):
-        self.doom_fire.draw()
+        #self.doom_fire.draw()
         self.draw_background()
         self.render_game_objects()
         self.draw_player_health()
@@ -63,14 +63,14 @@ class ObjectRenderer:
     def draw_background(self):
         self.sky_offset = (self.sky_offset + 4.5 * self.game.player.rel) % WIDTH
         # print(f'sky_offset:{self.sky_offset}, mouse_rel:{self.game.player.rel}')
-        doom_fire_surf = self.doom_fire.fire_surf
+        #doom_fire_surf = self.doom_fire.fire_surf
 
-        for i in range(FIRE_REPS):
-            self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i - self.sky_offset, 0 - HALF_HEIGHT))
-            self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i + WIDTH - self.sky_offset,
-                                              0 - HALF_HEIGHT))
-        # self.screen.blit(self.sky_image, (-self.sky_offset, 0))
-        # self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))
+        # for i in range(FIRE_REPS):
+        #     self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i - self.sky_offset, 0 - HALF_HEIGHT))
+        #     self.screen.blit(doom_fire_surf, (doom_fire_surf.get_width() * i + WIDTH - self.sky_offset,
+        #                                       0 - HALF_HEIGHT))
+        self.screen.blit(self.sky_image, (-self.sky_offset, 0))  # simple sky
+        self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))  # simple sky
 
         # floor
         pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
@@ -82,13 +82,13 @@ class ObjectRenderer:
         for depth, image, pos in list_of_objects:
             self.screen.blit(image, pos)
 
-    @staticmethod
-    def get_texture(path, res=(TEXTURE_SIZE, TEXTURE_SIZE)):
-        texture = pg.image.load(path).convert_alpha()
-        return pg.transform.scale(texture, res)
+    @staticmethod  # +
+    def get_texture(path, res=(TEXTURE_SIZE, TEXTURE_SIZE)):  # +
+        texture = pg.image.load(path).convert_alpha()  # +
+        return pg.transform.scale(texture, res)  # +
 
-    def load_wall_textures(self) -> dict:
-        return {
+    def load_wall_textures(self) -> dict:  # +
+        return {  # +
             1: self.get_texture('resources/textures/dacha/1_right.JPG'),
             2: self.get_texture('resources/textures/dacha/2_right.JPG'),
             3: self.get_texture('resources/textures/dacha/3_right.JPG'),

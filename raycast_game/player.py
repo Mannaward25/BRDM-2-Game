@@ -73,8 +73,8 @@ class Player:
             dx += -speed_cos  # +
             dy += -speed_sin  # +
         if keys[pg.K_a]:  # +
-            dx += speed_sin  # +
-            dy += -speed_cos  # +
+            dx += speed_sin * 0.8 # +
+            dy += -speed_cos * 0.8  # +
         if keys[pg.K_d]:  # +
             dx += -speed_sin  # +
             dy += speed_cos  # +
@@ -93,9 +93,9 @@ class Player:
 
     def check_wall_collision(self, dx, dy):  # collisions  # +
         scale = PLAYER_SIZE_SCALE / self.game.delta_time  # +
-        if self.check_wall(int(self.x + dx + scale), int(self.y)):  # +
+        if self.check_wall(int(self.x + dx * scale), int(self.y)):  # +
             self.x += dx  # +
-        if self.check_wall(int(self.x), int(self.y + dy + scale)):  # +
+        if self.check_wall(int(self.x), int(self.y + dy * scale)):  # +
             self.y += dy  # +
 
     def draw(self):  # +
