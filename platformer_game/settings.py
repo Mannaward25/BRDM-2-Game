@@ -1,0 +1,4 @@
+
+RES = (1200, 600)   # (1600, 900)
+WIDTH, HEIGHT = RES
+TILE_SIZE = 64
