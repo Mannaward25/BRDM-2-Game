@@ -123,26 +123,48 @@ class RayCasting:  # +
 
             ray_angle += DELTA_ANGLE
 
-    def floor_casting(self):
-        floor_text = self.textures[3]
+    # def floor_casting(self):
+    #     floor_text = self.textures[3]
+    #
+    #     for ix in range(WIDTH):
+    #
+    #         for jy in range(HALF_HEIGHT, HEIGHT, SCALE):
+    #             x = ix
+    #             y = jy + FOCAL_LEN
+    #             z = jy + 0.000001
+    #
+    #             px = x / z
+    #             py = y / z
+    #
+    #             floor_row = floor_text.subsurface(0, jy, TEXTURE_SIZE, jy)
 
-        for ix in range(WIDTH):
-
-            for jy in range(HALF_HEIGHT, HEIGHT, SCALE):
-                x = ix
-                y = jy + FOCAL_LEN
-                z = jy + 0.000001
-
-                px = x / z
-                py = y / z
-
-                floor_row = floor_text.subsurface(0, jy, TEXTURE_SIZE, jy)
-
+    # def floor_cast_two(self):
+    #     x_pos, y_pos = self.game.player.pos
+    #     ray_angle = self.game.player.angle - HALF_FOV + 0.0001
+    #
+    #     for x_ray in range(NUM_RAYS):
+    #         sin_a = math.sin(ray_angle)
+    #         cos_a = math.cos(ray_angle)
+    #
+    #         for y_ray in range(HALF_HEIGHT, HEIGHT - 1, 2):
+    #             x = x_ray
+    #             y = y_ray + FOCAL_LEN
+    #             z = y_ray - HALF_HEIGHT + 0.001
+    #
+    #             offset = y_ray + 0.0001 / HALF_HEIGHT
+    #             floor_row = self.textures[24].subsurface(
+    #                 0, offset % TEXTURE_SIZE, TEXTURE_SIZE, SCALE
+    #             )
+    #
+    #             floor_row = pg.transform.scale(floor_row, (SCALE, TEXTURE_SIZE))
+    #             floor_pos = (HALF_WIDTH, HALF_HEIGHT)
+    #             self.screen.blit(floor_row, floor_pos)
+    #
+    #
 
     def update(self):
         self.ray_cast()
         self.get_objects_to_render()
-        #self.floor_casting()
         #self.game.mode7.draw()  # THERE IS FLOOR RENDERING
 
     def rand_color(self):

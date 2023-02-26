@@ -58,6 +58,7 @@ class Game:  # +
         self.sound = Sound(self)
         self.pathfinding = PathFinding(self)
 
+        self.mode_seven = FakeModeSeven(self)
         # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
         # pg.mixer.music.play()
 
@@ -70,6 +71,7 @@ class Game:  # +
         #self.object_handler.update() # working
         self.weapon.update()  # working
         #self.doom_fire.update()  # working
+        #self.mode_seven.update()
 
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
@@ -84,6 +86,7 @@ class Game:  # +
 
         #self.map.draw()  # working
         #self.player.draw()
+        #self.mode_seven.draw()
 
     def check_events(self):  # +
         self.global_trigger = False  # +

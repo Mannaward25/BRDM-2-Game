@@ -73,7 +73,7 @@ class ObjectRenderer:  # +
         self.screen.blit(self.sky_image, (-self.sky_offset + WIDTH, 0))  # simple sky
 
         # floor
-        #pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
+        pg.draw.rect(self.screen, FLOOR_COLOR, (0, HALF_HEIGHT, WIDTH, HEIGHT))
 
     def render_game_objects(self):
         list_of_objects = sorted(self.game.raycasting.objects_to_render,  # find out
@@ -252,3 +252,70 @@ class Mode7:
 
     def draw(self):
         pg.surfarray.blit_array(self.game.screen, self.screen_array)
+
+
+class FakeModeSeven:
+
+    def __init__(self, game):
+        self.game = game
+        self.textures = self.game.object_renderer.wall_textures
+        self.surf = pg.surfarray.array3d(self.textures[25])
+        self.screen_array = pg.surfarray.array3d(pg.Surface(RES))
+        #self.fill_surfarray()
+
+        # frustum representing
+        self.f_near = 0.01
+        self.f_far = 0.1
+
+    def fill_surfarray(self):
+        for x in range(0, WIDTH):
+            for y in range(HALF_HEIGHT, HEIGHT):
+                self.screen_array[x][y] = self.surf[x % TEXTURE_SIZE][y % TEXTURE_SIZE]
+
+    def draw(self):
+        pg.surfarray.blit_array(self.game.screen, self.screen_array)
+
+    @staticmethod
+    @njit(fastmath=True, parallel=True)
+    def floor_cast(surf, screen_array, player_pos, player_ang, f_far, f_near):
+        p_pos_x, p_pos_y = player_pos
+        player_ang = player_ang
+
+        # far
+        f_far_x1 = p_pos_x + math.cos(player_ang - HALF_FOV) * f_far
+        f_far_y1 = p_pos_y + math.sin(player_ang - HALF_FOV) * f_far
+
+        f_far_x2 = p_pos_x + math.cos(player_ang + HALF_FOV) * f_far
+        f_far_y2 = p_pos_y + math.sin(player_ang + HALF_FOV) * f_far
+
+        # near
+        f_near_x1 = p_pos_x + math.cos(player_ang - HALF_FOV) * f_near
+        f_near_y1 = p_pos_y + math.sin(player_ang - HALF_FOV) * f_near
+
+        f_near_x2 = p_pos_x + math.cos(player_ang + HALF_FOV) * f_near
+        f_near_y2 = p_pos_y + math.sin(player_ang + HALF_FOV) * f_near
+
+        for y in prange(HALF_HEIGHT, HEIGHT):
+            f_sample_depth = y / (y / HALF_HEIGHT)
+
+            start_x = (f_far_x1 - f_near_x1) * f_sample_depth + f_near_x1
+            start_y = (f_far_y1 - f_near_y1) * f_sample_depth + f_near_y1
+
+            end_x = (f_far_x2 - f_near_x2) * f_sample_depth + f_near_x2
+            end_y = (f_far_y2 - f_near_y2) * f_sample_depth + f_near_y2
+
+            for x in prange(WIDTH):
+                sample_width = x / WIDTH
+                sample_x = (end_x - start_x) * sample_width + start_x
+                sample_y = (end_y - start_y) * sample_width + start_y
+
+                color = surf[int(sample_x) % TEXTURE_SIZE][int(sample_y) % TEXTURE_SIZE]
+                screen_array[int(sample_x)][int(sample_y)] = color
+        return screen_array
+
+    def update(self):
+        player_pos = self.game.player.pos
+        player_ang = self.game.player.angle
+        self.screen_array = self.floor_cast(self.surf, self.screen_array, player_pos,
+                                            player_ang, self.f_far, self.f_near)
+

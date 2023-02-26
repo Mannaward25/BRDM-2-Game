@@ -1,10 +1,10 @@
 import math
 
 #  BLOCK SIZE
-BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)  # +
-WEAPON_SCALE = 0.4  # 0.4 for (1600, 900) 0.3 for (1200, 600)
+BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)  # +
+WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 #  window settings
-RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)  # +
+RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)  # +
 FPS = 60  # +
 
 #  game settings
@@ -33,6 +33,7 @@ MAX_DEPTH = 20  # +
 #  colors
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+MAGENTA = (255, 0, 255)
 DARK_GRAY = (169, 169, 169)
 YELLOW = (255, 255, 0)
 BLUE = (0, 255, 255)
@@ -80,6 +81,6 @@ DELTA_FLOOR_HOR = FOV / 120
 
 # MODE7
 
-FOCAL_LEN = 800
+FOCAL_LEN = 250
 MODE_SEVEN_SCALE = 100
 
