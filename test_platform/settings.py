@@ -12,6 +12,3 @@ TEXTURE_SIZE = 256
 # colors
 BLACK = (0, 0, 0)
 BLUE = (0, 255, 255)
-
-# editor
-SHIFT_X_MULTIPLY = 10
