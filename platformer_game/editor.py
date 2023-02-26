@@ -37,7 +37,8 @@ class Editor:
             self.pan_active = False
 
         # mouse wheel
-        """event.y allow to get info about wheel moving. When wheel moves up we get event.y = 1
+        """
+        event.y allow to get info about wheel moving. When wheel moves up we get event.y = 1
             if wheel goes down we get event.y = -1
         """
         if event.type == pg.MOUSEWHEEL:
@@ -56,11 +57,43 @@ class Editor:
     # drawing tiles
     def draw_tile_lines(self):
         columns = WIDTH // TILE_SIZE + 1
-        rows = HEIGHT // TILE_SIZE
+        rows = HEIGHT // TILE_SIZE + 1
+
+        """
+        author implementation
+        
+        offset_vector = Vector(
+            x = self.origin.x - int(self.origin.x / TILE_SIZE) * TILE_SIZE,
+            y = self.origin.y - int(self.origin.y / TILE_SIZE) * TILE_SIZE
+            )
+        
+        for col in range(columns):
+            x = offset_vector.x + col * TILE_SIZE
+            pg.draw.line(self.game.screen, BLACK, (x, 0), (x, HEIGHT))
+        """
+
+        offset_vector = Vector(
+            x=self.origin.x - int(self.origin.x / TILE_SIZE) * TILE_SIZE,
+            y=self.origin.y - int(self.origin.y / TILE_SIZE) * TILE_SIZE
+        )
+
+        # my way also working but less elegant
+        # columns += abs((WIDTH - (WIDTH + int(self.origin.x))) // TILE_SIZE)
+        # rows += abs((HEIGHT - (HEIGHT + int(self.origin.y))) // TILE_SIZE)
 
         for col in range(columns):
-            x = self.origin.x + col * TILE_SIZE
+            x = offset_vector.x + col * TILE_SIZE
             pg.draw.line(self.game.screen, BLACK, (x, 0), (x, HEIGHT))
+            # # my way also working but less elegant
+            # x = self.origin.x - col * TILE_SIZE
+            # pg.draw.line(self.game.screen, BLACK, (x, 0), (x, HEIGHT))
+
+        for row in range(rows):
+            y = offset_vector.y + row * TILE_SIZE
+            pg.draw.line(self.game.screen, BLACK, (0, y), (WIDTH, y))
+            # # my way also working but less elegant
+            # y = self.origin.y - row * TILE_SIZE
+            # pg.draw.line(self.game.screen, BLACK, (0, y), (WIDTH, y))
 
     def draw(self):
         self.game.screen.fill('white')
