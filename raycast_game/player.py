@@ -121,7 +121,8 @@ class Player:
         self.movement()
         self.mouse_control()
         self.recover_health()
-        self.check_game_win()
+        if not self.game.object_handler.no_npc:
+            self.check_game_win()
 
     @property  # +
     def pos(self):

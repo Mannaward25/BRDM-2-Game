@@ -3,7 +3,7 @@ from random import randint
 
 
 class Sound:
-    def __init__(self, game):
+    def __init__(self, game, no_sound=False):
         self.game = game
         pg.mixer.init()
         self.path = 'resources/sound/'
@@ -13,10 +13,15 @@ class Sound:
         self.npc_death = pg.mixer.Sound(self.path + 'npc_death.wav')
         self.npc_shot = pg.mixer.Sound(self.path + 'npc_attack.wav')
         self.player_pain = pg.mixer.Sound(self.path + 'player_pain.wav')
-        pg.mixer.music.load(self.path + f'theme{randint(1, 3)}.mp3')  #
-        #pg.mixer.music.load(self.path + 'theme1.mp3')
-        pg.mixer.music.play()
-        #pg.mixer.music.set_volume(0.1)
+
+        if not no_sound:
+            pg.mixer.music.load(self.path + f'theme{randint(1, 3)}.mp3')  #
+            pg.mixer.music.play()
+        #
+
+    @staticmethod
+    def volume(self, vol=1.0):
+        pg.mixer.music.set_volume(vol)
 
 
 

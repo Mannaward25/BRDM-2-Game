@@ -10,6 +10,8 @@ from object_handler import *
 from weapon import *
 from sound import *
 from pathfinding import *
+from network_game import Server, Client
+from threading import Thread
 
 # npc movement algorithm (npc.py)
 # npc ray cast algorithm (npc.py)
@@ -22,7 +24,7 @@ from pathfinding import *
 
 class Game:  # +
 
-    def __init__(self):  # +
+    def __init__(self, host=False, network_game=False):  # +
         pg.init()  # +
         self.screen = pg.display.set_mode(RES)  # +
         self.clock = pg.time.Clock()  # +
@@ -32,6 +34,11 @@ class Game:  # +
         self.global_trigger = False  # special global event for npc animation
         self.global_event = pg.USEREVENT + 0  # special global event for npc animation
         pg.time.set_timer(self.global_event, 40)  # special global event for npc animation
+
+        # network settings
+        self.HOST = host
+        self.network_game = network_game
+        self.clients = 0
 
         self.new_game()  # +
         pg.mouse.set_visible(False)  # +
@@ -53,14 +60,26 @@ class Game:  # +
         # self.animated_sprite = AnimatedSprite(self)
 
         # new way of rendering sprite objects
-        self.object_handler = ObjectHandler(self)
+        self.object_handler = ObjectHandler(self, no_npc=True)
         self.weapon = Weapon(self)
-        self.sound = Sound(self)
+        self.sound = Sound(self, no_sound=True)
+
         self.pathfinding = PathFinding(self)
 
         self.mode_seven = FakeModeSeven(self)
         # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
         # pg.mixer.music.play()
+        #self.server = Server(self)
+        self.client = Client(self)
+
+        if self.HOST or self.network_game:
+            self.client.connect()
+
+    def server_events(self):
+        conn, address = self.server.sock.accept()
+        self.server.new_thread(self.server.threaded_client, conn)
+        print(f"connected to {address}")
+
 
     def update(self):  # +
         self.player.update()
@@ -112,5 +131,5 @@ class Game:  # +
 
 
 if __name__ == '__main__':  # +
-    game = Game()  # +
+    game = Game(host=True, network_game=True)  # +
     game.run()  # +

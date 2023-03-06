@@ -4,8 +4,9 @@ from npc import *
 
 class ObjectHandler:
 
-    def __init__(self, game):
+    def __init__(self, game, no_npc=False):
         self.game = game
+        self.no_npc = no_npc
         self.sprite_list = []
         self.npc_list = []
         self.npc_sprite_path = 'resources/sprites/npc/'
@@ -39,17 +40,18 @@ class ObjectHandler:
 
         # npc map
         #ddddddadd_npc(NPC(game))
-        add_npc(SoldierNPC(game, pos=(2, 7)))
-        add_npc(CacoDemonNPC(game, pos=(2.5, 6.5)))
-        add_npc(CacoDemonNPC(game, pos=(6, 5)))
-        add_npc(CacoDemonNPC(game, pos=(9.2, 1.2)))
-        add_npc(CacoDemonNPC(game, pos=(10, 7.5)))
-        add_npc(SoldierNPC(game, pos=(7, 5)))
-        add_npc(SoldierNPC(game, pos=(5.2, 1.5)))
-        add_npc(CacoDemonNPC(game, pos=(10, 5)))
-        add_npc(CyberDemonNPC(game, pos=(14, 3)))
-        add_npc(CyberDemonNPC(game, pos=(13, 2)))
-        add_npc(CyberDemonNPC(game, pos=(12, 6)))
+        if not no_npc:
+            add_npc(SoldierNPC(game, pos=(2, 7)))
+            add_npc(CacoDemonNPC(game, pos=(2.5, 6.5)))
+            add_npc(CacoDemonNPC(game, pos=(6, 5)))
+            add_npc(CacoDemonNPC(game, pos=(9.2, 1.2)))
+            add_npc(CacoDemonNPC(game, pos=(10, 7.5)))
+            add_npc(SoldierNPC(game, pos=(7, 5)))
+            add_npc(SoldierNPC(game, pos=(5.2, 1.5)))
+            add_npc(CacoDemonNPC(game, pos=(10, 5)))
+            add_npc(CyberDemonNPC(game, pos=(14, 3)))
+            add_npc(CyberDemonNPC(game, pos=(13, 2)))
+            add_npc(CyberDemonNPC(game, pos=(12, 6)))
 
     def update(self):
         self.npc_positions = {npc.map_pos for npc in self.npc_list if npc.alive}
