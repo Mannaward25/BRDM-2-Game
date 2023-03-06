@@ -10,7 +10,7 @@ from object_handler import *
 from weapon import *
 from sound import *
 from pathfinding import *
-from network_game import Server, Client
+from network_game import DedicatedServer, Client
 from threading import Thread
 
 # npc movement algorithm (npc.py)
@@ -74,12 +74,6 @@ class Game:  # +
 
         if self.HOST or self.network_game:
             self.client.connect()
-
-    def server_events(self):
-        conn, address = self.server.sock.accept()
-        self.server.new_thread(self.server.threaded_client, conn)
-        print(f"connected to {address}")
-
 
     def update(self):  # +
         self.player.update()
