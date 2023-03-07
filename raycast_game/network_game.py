@@ -2,6 +2,7 @@ import socket
 from game_settings import *
 import _thread
 import time
+import json
 
 # server side logic
 
@@ -112,7 +113,8 @@ class DedicatedServer:
                         break
 
                     all_data = self.get_player_data(pid)
-                    reply = f'{all_data}'
+                    reply = json.dumps(all_data)
+                    #reply = f'{all_data}'
                     print(f"Sending {reply}\n")
 
                 conn.sendall(reply.encode())

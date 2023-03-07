@@ -34,7 +34,6 @@ class Player:
                 print("unsuccessful connection retrial in 3 sec")
                 time.sleep(4)
                 tries += 1
-            self.create_player_instances()
 
         if self.game.network_game:
             self.x, self.y = self.client.get_init_pos()
@@ -144,16 +143,32 @@ class Player:
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
 
-    def create_player_instances(self):  # unused yet
-        for pid in range(1, self.number_of_players - 1):
-            self.players[pid + 1] = PlayerModel(self.game, pid + 1)
+    def update_player_instances(self, data: dict):  # unused yet
+        for pid, instance in data.items():
+            self.players[pid] = PlayerModel(self.game, pid)
 
     def send_data(self):
         self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
 
-    def recv_data(self):
+    def recv_data(self) -> dict:
         recv = self.client.client.recv(DATA_RECV_CHUNK)
-        print(recv.decode('utf-8'))
+        print(recv.decode('utf-8'), len(recv.decode('utf-8')))
+        msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
+        return msg
+
+    def update_server_info(self, data: dict):
+        self.number_of_players = len(data) + 1
+        self.update_player_instances(data)
+        if data and isinstance(data, dict):
+            for pid, instance in data.items():
+                player_struct = self.test_parse_data(data[pid])
+                x, y, angle = player_struct
+                self.players[pid].move(x, y)
+                self.players[pid].update()
+
+    def test_parse_data(self, string_data: str):
+        x, y, angle = string_data.split(',')
+        return x, y, angle
 
     def update(self):  # +
         self.movement()
@@ -162,7 +177,8 @@ class Player:
 
         if self.game.network_game:
             self.send_data()
-            self.recv_data()
+            data = self.recv_data()
+            self.update_server_info(data)
 
         if not self.game.object_handler.no_npc:
             self.check_game_win()
@@ -179,7 +195,7 @@ class Player:
 class PlayerModel(AnimatedSprite):
 
     def __init__(self, game, player_id, path='resources/sprites/npc/soldier/0.png',
-                 pos=(10.5, 5.5), scale=0.6, shift=0.08, animation_time=180):
+                 pos=(0, 0), scale=0.6, shift=0.08, animation_time=180):
         super().__init__(game, path, pos, scale, shift, animation_time)
         self.player_id = player_id
 
