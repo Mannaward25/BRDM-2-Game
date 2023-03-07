@@ -6,6 +6,7 @@ import numpy as np
 from game_settings import *  # +
 from network_game import Client
 from sprite_object import AnimatedSprite
+import json
 
 
 class Player:
