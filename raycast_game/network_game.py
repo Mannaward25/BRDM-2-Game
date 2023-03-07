@@ -33,24 +33,24 @@ class DedicatedServer:
 
         print("Waiting for connection..")
 
-    def assign_player_id(self, conn) -> int:
+    def assign_player_id(self, conn) -> str:
         """player gets unique id after connecting to the server"""
-        pid = 0
+        pid = "0"
         if not self.server_players:
-            self.server_players[self.clients] = PlayerDataStruct(conn, player_id=self.clients)
-            pid = self.clients
+            pid = str(self.clients)
+            self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
         else:
-            if self.clients not in self.server_players:
-                self.server_players[self.clients] = PlayerDataStruct(conn, player_id=self.clients)
-                pid = self.clients
+            if str(self.clients) not in self.server_players:
+                pid = str(self.clients)
+                self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
             else:
                 for player_id in range(1, self.clients + 1):
-                    if player_id not in self.server_players:
-                        self.server_players[player_id] = PlayerDataStruct(conn, player_id=player_id)
-                        pid = player_id
+                    if str(player_id) not in self.server_players:
+                        pid = str(player_id)
+                        self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
         return pid
 
-    def delete_player_from_server(self, pid) -> int:
+    def delete_player_from_server(self, pid: str) -> str:
         """if player quits"""
 
         del self.server_players[pid]
@@ -75,7 +75,7 @@ class DedicatedServer:
             self.server_players[pid].set_pos(x_pos, y_pos)
             self.server_players[pid].set_angle(angle)
 
-    def get_player_data(self, pid):
+    def get_player_data(self, pid: str):
         all_data = {}
 
         for player_id, player_instance in self.server_players.items():
@@ -194,7 +194,7 @@ class Client:
 
 class PlayerDataStruct:
 
-    def __init__(self, conn, player_id=0):
+    def __init__(self, conn, player_id="0"):
         self.player_id = player_id
         self.connection_instance = conn
         self.x = 0
