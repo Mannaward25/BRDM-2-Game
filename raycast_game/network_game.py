@@ -71,10 +71,9 @@ class DedicatedServer:
 
     def update_player_data(self, player_struct: tuple, pid: int):
         x_pos, y_pos, angle, player_id = player_struct
-        for instance in self.server_players.values():
-            if pid == instance.get_player_id:
-                self.server_players[pid].set_pos(x_pos, y_pos)
-                self.server_players[pid].set_angle(angle)
+        for _ in self.server_players.values():
+            self.server_players[pid].set_pos(x_pos, y_pos)
+            self.server_players[pid].set_angle(angle)
 
     def get_player_data(self, pid):
         all_data = {}
