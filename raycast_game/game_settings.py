@@ -1,10 +1,10 @@
 import math
 
 #  BLOCK SIZE
-BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)  # +
-WEAPON_SCALE = 0.4  # 0.4 for (1600, 900) 0.3 for (1200, 600)
+BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)  # +
+WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 #  window settings
-RES = WIDTH, HEIGHT = (1600, 900)  # (1600, 900) (1200, 600)  # +
+RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)  # +
 FPS = 60  # +
 
 #  game settings
@@ -89,7 +89,7 @@ MODE_SEVEN_SCALE = 100
 PORT = 6666
 MAX_PLAYERS = 2
 DATA_RECV_CHUNK = 2048
-LOCAL_SERVER_IP = 'localhost'  # 192.168.1.110
+LOCAL_SERVER_IP = '192.168.1.110'  # 192.168.1.110
 
 # messages
 CLOSE = 'close'
