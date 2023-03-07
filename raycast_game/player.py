@@ -198,6 +198,11 @@ class PlayerModel(AnimatedSprite):
                  pos=(0, 0), scale=0.6, shift=0.08, animation_time=180):
         super().__init__(game, path, pos, scale, shift, animation_time)
         self.player_id = player_id
+        self.attack_images = self.get_images(self.path + '/attack')
+        self.death_images = self.get_images(self.path + '/death')
+        self.idle_images = self.get_images(self.path + '/idle')
+        self.pain_images = self.get_images(self.path + '/pain')
+        self.walk_images = self.get_images(self.path + '/walk')
 
     def move(self, x, y):
         self.x = x
@@ -206,3 +211,4 @@ class PlayerModel(AnimatedSprite):
     def update(self):
         self.check_animation_time()
         self.get_sprite()
+        self.animate(self.idle_images)
