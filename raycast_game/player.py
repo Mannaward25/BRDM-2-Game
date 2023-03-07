@@ -168,7 +168,7 @@ class Player:
 
     def test_parse_data(self, string_data: str):
         x, y, angle = string_data.split(',')
-        return x, y, angle
+        return float(x), float(y), float(angle)
 
     def update(self):  # +
         self.movement()
