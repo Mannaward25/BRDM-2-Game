@@ -65,11 +65,11 @@ class DedicatedServer:
         if len(data) == 4:  # check if struct has 4 variables
             x, y, angle, player_id = data
 
-            return float(x), float(y), float(angle), int(player_id)
+            return float(x), float(y), float(angle), str(player_id)
         else:
             print('no data prepared!')
 
-    def update_player_data(self, player_struct: tuple, pid: int):
+    def update_player_data(self, player_struct: tuple, pid: str):
         x_pos, y_pos, angle, player_id = player_struct
         for _ in self.server_players.values():
             self.server_players[pid].set_pos(x_pos, y_pos)
