@@ -50,12 +50,9 @@ class DedicatedServer:
                         pid = player_id
         return pid
 
-    def delete_player_from_server(self, conn) -> int:
+    def delete_player_from_server(self, pid) -> int:
         """if player quits"""
-        pid = 0
-        for player_id, player_instance in self.server_players.items():
-            if player_instance.connection_instance == conn:
-                pid = player_instance.player_id
+
         del self.server_players[pid]
         print(f'deleted player with id {pid}')
         return pid
@@ -72,12 +69,12 @@ class DedicatedServer:
         else:
             print('no data prepared!')
 
-    def update_player_data(self, player_struct: tuple):
+    def update_player_data(self, player_struct: tuple, pid: int):
         x_pos, y_pos, angle, player_id = player_struct
         for instance in self.server_players.values():
-            if player_id == instance.get_player_id:
-                instance.set_pos(x_pos, y_pos)
-                instance.set_angle(angle)
+            if pid == instance.get_player_id:
+                self.server_players[pid].set_pos(x_pos, y_pos)
+                self.server_players[pid].set_angle(angle)
 
     def get_player_data(self, pid):
         all_data = {}
@@ -109,7 +106,7 @@ class DedicatedServer:
                     player_struct = self.test_prep_data(reply)
 
                     if player_struct:
-                        self.update_player_data(player_struct)  # <---- update data of the player which send info
+                        self.update_player_data(player_struct, pid)  # <---- update data of the player which send info
 
                     if reply == CLOSE:
                         self.close_connection(conn)
@@ -125,7 +122,7 @@ class DedicatedServer:
                 break
 
         print("Lost connection\n")
-        self.delete_player_from_server(self.conn)
+        self.delete_player_from_server(pid)
         self.conn.close()
         self.clients -= 1
 
