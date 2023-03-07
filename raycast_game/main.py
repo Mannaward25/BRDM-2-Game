@@ -11,7 +11,8 @@ from weapon import *
 from sound import *
 from pathfinding import *
 from network_game import DedicatedServer, Client
-from threading import Thread
+import subprocess
+import time
 
 # npc movement algorithm (npc.py)
 # npc ray cast algorithm (npc.py)
@@ -39,6 +40,12 @@ class Game:  # +
         self.HOST = host
         self.network_game = network_game
         self.clients = 0
+        self.client = None
+        self.exec_path = sys.executable
+
+        if self.HOST:
+            subprocess.Popen([self.exec_path, 'network_game.py'])
+            time.sleep(2)
 
         self.new_game()  # +
         pg.mouse.set_visible(False)  # +
@@ -48,6 +55,7 @@ class Game:  # +
         return pg.time.get_ticks() * 0.001
 
     def new_game(self):  # +
+        self.client = Client(self)
         self.map = Map(self)  # +
         self.player = Player(self)  # +
 
@@ -70,10 +78,7 @@ class Game:  # +
         # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
         # pg.mixer.music.play()
         #self.server = Server(self)
-        self.client = Client(self)
 
-        if self.HOST or self.network_game:
-            self.client.connect()
 
     def update(self):  # +
         self.player.update()
@@ -106,8 +111,14 @@ class Game:  # +
         for event in pg.event.get():  # +
             if event.type == pg.QUIT or \
                     (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+
+                if self.HOST:
+                    self.client.send_msg(CLOSE)
+                    self.client.close()
+
                 pg.quit()  # +
                 sys.exit()  # +
+
             elif event.type == self.global_event:  # +
                 self.global_trigger = True  # +
             self.player.single_fire_event(event)  # +
@@ -125,5 +136,5 @@ class Game:  # +
 
 
 if __name__ == '__main__':  # +
-    game = Game(host=True, network_game=True)  # +
+    game = Game(host=False, network_game=True)  # +
     game.run()  # +

@@ -1,7 +1,11 @@
+import time
+
 import pygame as pg  # +
 import math  # +
 import numpy as np
 from game_settings import *  # +
+from network_game import Client
+from sprite_object import AnimatedSprite
 
 
 class Player:
@@ -9,7 +13,7 @@ class Player:
     def __init__(self, game):  # +
         self.game = game  # +
         self.x, self.y = PLAYER_POS  # +
-        self.x_prev, self.y_prev = PLAYER_POS
+        self.x_prev, self.y_prev = PLAYER_POS  # do not sure, this is using somewhere
         self.angle = PLAYER_ANGLE  # +
         self.no_tau_angle = PLAYER_ANGLE
         self.rel = 0
@@ -17,6 +21,32 @@ class Player:
         self.health = PLAYER_MAX_HEALTH
         self.health_recovery_delay = 700
         self.time_prev = pg.time.get_ticks()
+
+        # networking
+        self.client: Client = self.game.client
+        self.number_of_players = 0
+        self.players = {}
+
+        tries = 0  # hardcode
+        if self.game.HOST or self.game.network_game:
+            while not self.try_connect() and tries < 3:
+                print("unsuccessful connection retrial in 3 sec")
+                time.sleep(4)
+                tries += 1
+            self.create_player_instances()
+
+        if self.game.network_game:
+            self.x, self.y = self.client.get_init_pos()
+
+    def try_connect(self):
+        msg = self.client.connect()
+        if msg:
+            num = int(msg.split(' ')[-1]) if msg else 0
+            self.number_of_players = num
+            self.client.set_client_id(num)
+            print(msg, f'from Client_id {num} .__init__')
+            return True
+        return False
 
     def recover_health(self):
         if self.check_health_recovery_delay() and self.health < PLAYER_MAX_HEALTH:
@@ -65,15 +95,13 @@ class Player:
 
         keys = pg.key.get_pressed()  # +
         if keys[pg.K_w]:  # +
-            # print(self.map_pos)
-            # print(self.pos)
             dx += speed_cos  # +
             dy += speed_sin  # +
         if keys[pg.K_s]:  # +
             dx += -speed_cos  # +
             dy += -speed_sin  # +
         if keys[pg.K_a]:  # +
-            dx += speed_sin * 0.8 # +
+            dx += speed_sin * 0.8  # +
             dy += -speed_cos * 0.8  # +
         if keys[pg.K_d]:  # +
             dx += -speed_sin  # +
@@ -112,15 +140,29 @@ class Player:
         if my < HALF_HEIGHT or my > HALF_HEIGHT:
             pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
         self.rel = pg.mouse.get_rel()[0]
-        # print(f'mouse_rel:{self.rel}')
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
-        #self.no_tau_angle += self.rel * MOUSE_SENSITIVITY
         self.angle += self.rel * MOUSE_SENSITIVITY
+
+    def create_player_instances(self):  # unused yet
+        for pid in range(1, self.number_of_players - 1):
+            self.players[pid + 1] = PlayerModel(self.game, pid + 1)
+
+    def send_data(self):
+        self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
+
+    def recv_data(self):
+        recv = self.client.client.recv(DATA_RECV_CHUNK)
+        print(recv.decode('utf-8'))
 
     def update(self):  # +
         self.movement()
         self.mouse_control()
         self.recover_health()
+
+        if self.game.network_game:
+            self.send_data()
+            self.recv_data()
+
         if not self.game.object_handler.no_npc:
             self.check_game_win()
 
@@ -131,3 +173,19 @@ class Player:
     @property  # +
     def map_pos(self) -> tuple:
         return int(self.x), int(self.y)
+
+
+class PlayerModel(AnimatedSprite):
+
+    def __init__(self, game, player_id, path='resources/sprites/npc/soldier/0.png',
+                 pos=(10.5, 5.5), scale=0.6, shift=0.08, animation_time=180):
+        super().__init__(game, path, pos, scale, shift, animation_time)
+        self.player_id = player_id
+
+    def move(self, x, y):
+        self.x = x
+        self.y = y
+
+    def update(self):
+        self.check_animation_time()
+        self.get_sprite()

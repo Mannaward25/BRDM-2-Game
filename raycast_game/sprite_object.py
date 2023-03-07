@@ -9,9 +9,9 @@ class SpriteObject:
     def __init__(self, game, path='resources/sprites/static_sprites/candlebra.png',
                  pos=(9.2, 1.2), scale=0.7, shift=0.4):
         self.game = game
-        self.player = game.player
-        self.x, self.y = pos
-        self.image = pg.image.load(path).convert_alpha()
+        self.player = game.player  # we are going to need player pos
+        self.x, self.y = pos   # position of the sprite
+        self.image = pg.image.load(path).convert_alpha()  # loading sprite image
         self.IMAGE_WIDTH = self.image.get_width()
         self.IMAGE_HALF_WIDTH = self.image.get_width() // 2
         self.dx, self.dy, self.theta = 0, 0, 0

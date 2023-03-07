@@ -90,3 +90,6 @@ PORT = 6666
 MAX_PLAYERS = 2
 DATA_RECV_CHUNK = 2048
 LOCAL_SERVER_IP = 'localhost'  # 192.168.1.110
+
+# messages
+CLOSE = 'close'
