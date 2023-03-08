@@ -82,9 +82,10 @@ class Game:  # +
 
     def update(self):  # +
         self.object_handler.update()  # working
-        self.player.update()
+
         #self.mode7.update()  # working
         self.raycasting.update()  # working
+        self.player.update()
         # self.static_sprite.update()
         # self.animated_sprite.update()
 
