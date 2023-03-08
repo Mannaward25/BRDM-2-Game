@@ -145,7 +145,12 @@ class Player:
 
     def update_player_instances(self, data: dict):  # unused yet
         for pid, instance in data.items():
-            self.players[pid] = PlayerModel(self.game, pid)
+            if pid not in data:
+                self.players[pid] = PlayerModel(self.game, pid)
+                player_struct = self.test_parse_data(data[pid])
+                x, y, angle = player_struct
+                self.players[pid].move(x, y)
+                self.players[pid].update()
 
     def send_data(self):
         self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
@@ -158,13 +163,16 @@ class Player:
 
     def update_server_info(self, data: dict):
         self.number_of_players = len(data) + 1
-        self.update_player_instances(data)
+
         if data and isinstance(data, dict):
-            for pid, instance in data.items():
-                player_struct = self.test_parse_data(data[pid])
-                x, y, angle = player_struct
-                self.players[pid].move(x, y)
-                self.players[pid].update()
+            if data.keys() == self.players.keys():
+                for pid in data.keys():
+                    player_struct = self.test_parse_data(data[pid])
+                    x, y, angle = player_struct
+                    self.players[pid].move(x, y)
+                    self.players[pid].update()
+            else:
+                self.update_player_instances(data)
 
     def test_parse_data(self, string_data: str):
         x, y, angle = string_data.split(',')
