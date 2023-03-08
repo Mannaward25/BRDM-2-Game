@@ -156,7 +156,7 @@ class Player:
 
     def recv_data(self) -> dict:
         recv = self.client.client.recv(DATA_RECV_CHUNK)
-        print(recv.decode('utf-8'), len(recv.decode('utf-8')))
+        #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
         msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
         return msg
 

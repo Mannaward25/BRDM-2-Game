@@ -3,6 +3,8 @@ import math
 #  BLOCK SIZE
 BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)  # +
 WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
+PLAYER_SIZE_SCALE = 80
+
 #  window settings
 RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)  # +
 FPS = 60  # +
@@ -12,7 +14,6 @@ PLAYER_POS = 1.5, 2.8  # +
 PLAYER_ANGLE = 0  # +
 PLAYER_SPEED = 0.0035  # +
 PLAYER_ROT_SPEED = 0.002  # rotation speed  # +
-PLAYER_SIZE_SCALE = 60
 PLAYER_MAX_HEALTH = 100
 PLAYER_HEIGHT = 0.5  # for floor raycasting
 HALF_WIDTH = WIDTH // 2  # +
