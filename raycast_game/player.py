@@ -202,7 +202,7 @@ class Player:
 class PlayerModel(AnimatedSprite):
 
     def __init__(self, game, player_id, path='resources/sprites/npc/soldier/0.png',
-                 pos=(2.5, 6.5), scale=0.6, shift=0.08, animation_time=180):
+                 pos=(2.5, 6.5), scale=0.4, shift=0.4, animation_time=180):
         super().__init__(game, path, pos, scale, shift, animation_time)
         self.player_id = player_id
         self.attack_images = self.get_images(self.path + '/attack')
