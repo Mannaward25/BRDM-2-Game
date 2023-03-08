@@ -146,10 +146,9 @@ class Player:
     def update_player_instances(self, data: dict):  # unused yet
         for pid, instance in data.items():
             if pid not in self.players:
-                self.players[pid] = PlayerModel(self.game, pid)
                 player_struct = self.test_parse_data(data[pid])
                 x, y, angle = player_struct
-                self.players[pid].move(x, y)
+                self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].update()
 
     def send_data(self):
