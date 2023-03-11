@@ -160,9 +160,10 @@ class Player:
         self.client.send_data(pickle.dumps(self.player_data))  # READY
 
     def recv_data(self) -> dict:
-        recv = self.client.client.recv(DATA_RECV_CHUNK)
+        recv: bytes = self.client.client.recv(DATA_RECV_CHUNK)
         #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
-        msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data  # YET TODO
+        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data  # YET TODO
+        msg: dict = pickle.loads(recv)
         return msg
 
     def update_server_info(self, data: dict):
@@ -171,15 +172,19 @@ class Player:
         if data and isinstance(data, dict):
             if data.keys() == self.players.keys():
                 for pid in data.keys():
-                    player_struct = self.test_parse_data(data[pid])
+                    player_struct = self.parse_data(data[pid])
                     x, y, angle = player_struct
                     self.players[pid].move(x, y)
                     self.players[pid].update()
             else:
                 self.update_player_instances(data)
 
-    def test_parse_data(self, string_data: str):
+    def test_parse_data(self, string_data: str) -> tuple:
         x, y, angle = string_data.split(',')
+        return float(x), float(y), float(angle)
+
+    def parse_data(self, obj_data: ServerPlayerDataStruct) -> tuple:
+        x, y, angle, _ = obj_data.get_params()
         return float(x), float(y), float(angle)
 
     def update(self):  # +
@@ -189,8 +194,8 @@ class Player:
 
         if self.game.network_game:
             self.send_data()
-            data = self.recv_data()  # YET TODO
-            self.update_server_info(data)  # YET TODO
+            data = self.recv_data()
+            self.update_server_info(data)
 
         if not self.game.object_handler.no_npc:
             self.check_game_win()

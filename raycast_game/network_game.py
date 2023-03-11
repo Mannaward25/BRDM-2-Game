@@ -51,7 +51,7 @@ class DedicatedServer:
                     if str(player_id) not in self.server_players:
                         pid = str(player_id)
                         self.server_players[pid] = ServerPlayerDataStruct(conn, player_id=pid)
-        tmp.client_id = pid
+        tmp.set_client_id(pid)
         pid = tmp
         return pid
 
@@ -74,18 +74,17 @@ class DedicatedServer:
         else:
             print('no data prepared!')
 
-    def new_prep_data(self, data: 'ClientPlayerDataStruct'):  # YET TODO
-        data = None
+    def new_prep_data(self, data: 'ClientPlayerDataStruct') -> tuple:
         if isinstance(data, ClientPlayerDataStruct):
-            pass
-        #return float(x), float(y), float(angle), str(player_id)  # YET TODO
-
+            x, y, angle, health = data.get_player_data()
+            player_id = data.get_player_id()
+            return float(x), float(y), float(angle), str(player_id)
+        return tuple()
 
     def update_player_data(self, player_struct: tuple, pid: str):
-        x_pos, y_pos, angle, player_id = player_struct
+        x_pos, y_pos, angle, _ = player_struct
         for _ in self.server_players.values():
-            self.server_players[pid].set_pos(x_pos, y_pos)
-            self.server_players[pid].set_angle(angle)
+            self.server_players[pid].set_params((x_pos, y_pos), angle)
 
     def get_player_data(self, pid: str):
         all_data = {}
@@ -105,7 +104,7 @@ class DedicatedServer:
                 all_data[other_player_id] = player_instance
         return all_data
 
-    def threaded_client(self, conn, pid: 'HelloMsg'):
+    def threaded_client(self, conn, pid):
         conn.send(pickle.dumps(pid))
         pid = pid.pid  # get str from class HelloMsg()
 
@@ -125,7 +124,7 @@ class DedicatedServer:
                     reply: ClientPlayerDataStruct = pickle.loads(data)
                     print(f"Received: {reply}\n")
                     # player_struct = self.test_prep_data(reply)  # if we use string data transfer
-                    player_struct = self.new_prep_data(reply)  # if we use pickle class data transfer  # YET TODO
+                    player_struct = self.new_prep_data(reply)  # if we use pickle class data transfer
 
                     if player_struct:
                         self.update_player_data(player_struct, pid)  # <---- update data of the player which send info
@@ -182,12 +181,12 @@ class Client:
             '2': (2.5, 6.5)
         }
 
-    def connect(self) -> str:
+    def connect(self) -> 'HelloMsg':
 
         try:
             self.client.connect(self.address)
-            data = self.client.recv(DATA_RECV_CHUNK).decode()
-
+            data = self.client.recv(DATA_RECV_CHUNK)
+            data = pickle.loads(data)
             return data
         except:
             pass
@@ -221,42 +220,42 @@ class HelloMsg:
     def __init__(self, msg='', client_id='0'):
 
         self.client_id = client_id
-        self.msg = f'Player {self.client_id} connected'
+        self.msg = f'Player {client_id} connected'
 
     @property
     def pid(self):
+
         return self.client_id
 
+    def set_client_id(self, client_id):
+        self.msg = f'Player {client_id} connected'
+        self.client_id = client_id
 
-class ClientPlayerDataStruct:
-    """struct we will pack into binary with pickle module
-        and send to the server
-    """
-    def __init__(self, player_id='0'):
+
+class PlayerDataStruct:
+
+    def __init__(self, player_id, pos: tuple = (0, 0), angle=0.0, health=0):
         self.player_id = player_id
-        self.x = 0
-        self.y = 0
-        self.angle = 0
-        self.health = 0
-
-    def set_params(self, pos: tuple, angle, health):
         self.x, self.y = pos
         self.angle = angle
         self.health = health
 
+    def set_params(self, pos: tuple, angle, health=0):
+        self.x, self.y = pos
+        self.angle = angle
+        self.health = health
+
+    def get_params(self):
+        return self.x, self.y, self.angle, self.health
+
     def set_player_id(self, player_id):
         self.player_id = player_id
 
+    def get_player_id(self):
+        return self.player_id
 
-class ServerPlayerDataStruct:
-    """what we will store in server memory"""
-    def __init__(self, conn, player_id="0"):
-        self.player_id = player_id
-        self.connection_instance = conn
-        self.x = 0
-        self.y = 0
-        self.angle = 0
-        self.health = 0
+    def get_player_data(self):
+        return self.x, self.y, self.angle, self.health
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
@@ -270,14 +269,25 @@ class ServerPlayerDataStruct:
     def get_angle(self):
         return self.angle
 
-    def get_all_data(self):
-        return self.player_id, f'{self.x},{self.y},{self.angle}'
+    def show(self):
+        print(f'player_id: {self.player_id}; pos:({self.x}, {self.y}); angle: {self.angle}; health: {self.health};')
 
-    def get_player_id(self):
-        return self.player_id
 
-    def set_player_id(self, player_id):
-        self.player_id = player_id
+class ClientPlayerDataStruct(PlayerDataStruct):
+    """struct we will pack into binary with pickle module
+        and send to the server
+    """
+    def __init__(self, player_id='0'):
+        x, y, angle, health = 0, 0, 0, 0
+        super().__init__(player_id, (x, y), angle, health)
+
+
+class ServerPlayerDataStruct(PlayerDataStruct):
+    """what we will store in server memory"""
+    def __init__(self, conn, player_id="0"):
+        x, y, angle, health = 0, 0, 0, 0
+        super().__init__(player_id, (x, y), angle, health)
+        self.connection_instance = conn
 
 
 def main():

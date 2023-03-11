@@ -1,6 +1,6 @@
 from game_settings import *
 from player import Player, PlayerModel
-from network_game import Client
+from network_game import Client, ClientPlayerDataStruct, ServerPlayerDataStruct
 
 """bot for tests"""
 
@@ -19,13 +19,25 @@ class App:
         self.ghost = Ghost(self)
 
     def update(self):
-        pass
+        while True:
+            self.ghost.update()
 
 
 class Ghost(Player):
     """network bot"""
     def __init__(self, game):
         super().__init__(game)
+
+    def show_data(self, data: dict):
+        for pid in data.keys():
+            data[pid].show()
+
+    def update(self):
+        if self.game.network_game:
+            self.send_data()
+            data = self.recv_data()
+            self.show_data(data)
+            self.update_server_info(data)
 
 
 class GhostModel(PlayerModel):
@@ -36,4 +48,5 @@ class GhostModel(PlayerModel):
 
 
 if __name__ == '__main__':
-    pass
+    app = App()
+    app.update()
