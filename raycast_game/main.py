@@ -81,8 +81,6 @@ class Game:  # +
 
 
     def update(self):  # +
-
-
         #self.mode7.update()  # working
         self.raycasting.update()  # working
         self.player.update()

@@ -3,6 +3,7 @@ from game_settings import *
 import _thread
 import time
 import json
+import pickle
 
 # server side logic
 
@@ -34,21 +35,24 @@ class DedicatedServer:
 
         print("Waiting for connection..")
 
-    def assign_player_id(self, conn) -> str:
+    def assign_player_id(self, conn) -> 'HelloMsg':
         """player gets unique id after connecting to the server"""
-        pid = "0"
+        tmp = HelloMsg()
+        pid = tmp.pid
         if not self.server_players:
             pid = str(self.clients)
-            self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
+            self.server_players[pid] = ServerPlayerDataStruct(conn, player_id=pid)
         else:
             if str(self.clients) not in self.server_players:
                 pid = str(self.clients)
-                self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
+                self.server_players[pid] = ServerPlayerDataStruct(conn, player_id=pid)
             else:
                 for player_id in range(1, self.clients + 1):
                     if str(player_id) not in self.server_players:
                         pid = str(player_id)
-                        self.server_players[pid] = PlayerDataStruct(conn, player_id=pid)
+                        self.server_players[pid] = ServerPlayerDataStruct(conn, player_id=pid)
+        tmp.client_id = pid
+        pid = tmp
         return pid
 
     def delete_player_from_server(self, pid: str) -> str:
@@ -70,6 +74,13 @@ class DedicatedServer:
         else:
             print('no data prepared!')
 
+    def new_prep_data(self, data: 'ClientPlayerDataStruct'):  # YET TODO
+        data = None
+        if isinstance(data, ClientPlayerDataStruct):
+            pass
+        #return float(x), float(y), float(angle), str(player_id)  # YET TODO
+
+
     def update_player_data(self, player_struct: tuple, pid: str):
         x_pos, y_pos, angle, player_id = player_struct
         for _ in self.server_players.values():
@@ -85,9 +96,18 @@ class DedicatedServer:
                 all_data[other_player_id] = data
         return all_data
 
-    def threaded_client(self, conn, pid):
+    def new_get_player_data(self, pid: str):
+        all_data = {}
 
-        conn.send(f"Connected player_id {pid}".encode())
+        for player_id, player_instance in self.server_players.items():  # player_instance: ServerPlayerDataStruct
+            other_player_id = player_instance.get_player_id()
+            if pid != other_player_id:
+                all_data[other_player_id] = player_instance
+        return all_data
+
+    def threaded_client(self, conn, pid: 'HelloMsg'):
+        conn.send(pickle.dumps(pid))
+        pid = pid.pid  # get str from class HelloMsg()
 
         reply = ''
         while True:
@@ -101,9 +121,11 @@ class DedicatedServer:
                     print("Disconnected")
                     break
                 else:
-                    reply = data.decode('utf-8')  # <--- get data from clients
+                    #reply = data.decode('utf-8')  # <--- get data from clients if we use string data transfer
+                    reply: ClientPlayerDataStruct = pickle.loads(data)
                     print(f"Received: {reply}\n")
-                    player_struct = self.test_prep_data(reply)
+                    # player_struct = self.test_prep_data(reply)  # if we use string data transfer
+                    player_struct = self.new_prep_data(reply)  # if we use pickle class data transfer  # YET TODO
 
                     if player_struct:
                         self.update_player_data(player_struct, pid)  # <---- update data of the player which send info
@@ -112,12 +134,12 @@ class DedicatedServer:
                         self.close_connection(conn)
                         break
 
-                    all_data = self.get_player_data(pid)
-                    reply = json.dumps(all_data)
-                    #reply = f'{all_data}'
-                    print(f"Sending {reply}\n")
+                    all_data = self.new_get_player_data(pid)
+                    print(f"Sending {all_data}\n")
 
-                conn.sendall(reply.encode())
+                    reply: bytes = pickle.dumps(all_data)  # json.dumps(all_data) if we use json structs
+
+                conn.sendall(reply)  # reply.encode() if we use json
                 print(f'self.clients = {self.clients}')
             except Exception:
                 break
@@ -146,7 +168,7 @@ class Client:
 
     def __init__(self, game, server=LOCAL_SERVER_IP, port=PORT):
         self.game = game
-        self.client_id = 0
+        self.client_id = '0'
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.server = server
@@ -155,9 +177,9 @@ class Client:
         self.address = (self.server, self.port)
 
         self.client_pos = {
-            0: PLAYER_POS,
-            1: PLAYER_POS,
-            2: (2.5, 6.5)
+            '0': PLAYER_POS,
+            '1': PLAYER_POS,
+            '2': (2.5, 6.5)
         }
 
     def connect(self) -> str:
@@ -177,10 +199,10 @@ class Client:
         return self.client_pos[self.client_id]
 
     def set_client_id(self, num):
-        self.client_id = int(num)
+        self.client_id = str(num)
 
     def get_client_id(self):
-        return int(self.client_id)
+        return str(self.client_id)
 
     def send_msg(self, msg: str):
         """for service use only"""
@@ -194,8 +216,40 @@ class Client:
         self.client.close()
 
 
-class PlayerDataStruct:
+class HelloMsg:
 
+    def __init__(self, msg='', client_id='0'):
+
+        self.client_id = client_id
+        self.msg = f'Player {self.client_id} connected'
+
+    @property
+    def pid(self):
+        return self.client_id
+
+
+class ClientPlayerDataStruct:
+    """struct we will pack into binary with pickle module
+        and send to the server
+    """
+    def __init__(self, player_id='0'):
+        self.player_id = player_id
+        self.x = 0
+        self.y = 0
+        self.angle = 0
+        self.health = 0
+
+    def set_params(self, pos: tuple, angle, health):
+        self.x, self.y = pos
+        self.angle = angle
+        self.health = health
+
+    def set_player_id(self, player_id):
+        self.player_id = player_id
+
+
+class ServerPlayerDataStruct:
+    """what we will store in server memory"""
     def __init__(self, conn, player_id="0"):
         self.player_id = player_id
         self.connection_instance = conn

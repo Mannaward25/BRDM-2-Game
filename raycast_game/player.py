@@ -4,9 +4,10 @@ import pygame as pg  # +
 import math  # +
 import numpy as np
 from game_settings import *  # +
-from network_game import Client
+from network_game import Client, ServerPlayerDataStruct, HelloMsg, ClientPlayerDataStruct
 from sprite_object import AnimatedSprite
 import json
+import pickle
 
 
 class Player:
@@ -25,6 +26,7 @@ class Player:
 
         # networking
         self.client: Client = self.game.client
+        self.player_data = ClientPlayerDataStruct()
         self.number_of_players = 0
         self.players = {}
 
@@ -40,9 +42,8 @@ class Player:
 
     def try_connect(self):
         msg = self.client.connect()
-        if msg:
-            num = int(msg.split(' ')[-1]) if msg else 0
-            self.number_of_players = num
+        if msg and isinstance(msg, HelloMsg):
+            num = msg.pid
             self.client.set_client_id(num)
             print(msg, f'from Client_id {num} .__init__')
             return True
@@ -152,12 +153,16 @@ class Player:
                 self.players[pid].update()
 
     def send_data(self):
-        self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
+        self.player_data.set_player_id(self.client.client_id)
+        self.player_data.set_params((self.x, self.y), self.angle, self.health)
+
+        #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
+        self.client.send_data(pickle.dumps(self.player_data))  # READY
 
     def recv_data(self) -> dict:
         recv = self.client.client.recv(DATA_RECV_CHUNK)
         #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
-        msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
+        msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data  # YET TODO
         return msg
 
     def update_server_info(self, data: dict):
@@ -184,8 +189,8 @@ class Player:
 
         if self.game.network_game:
             self.send_data()
-            data = self.recv_data()
-            self.update_server_info(data)
+            data = self.recv_data()  # YET TODO
+            self.update_server_info(data)  # YET TODO
 
         if not self.game.object_handler.no_npc:
             self.check_game_win()
