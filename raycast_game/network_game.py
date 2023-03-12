@@ -162,7 +162,7 @@ class DedicatedServer:
 
         print("Lost connection\n")
         self.delete_player_from_server(pid)
-        self.conn.close()
+        #self.conn.close()
         self.clients -= 1
 
     def run(self):
