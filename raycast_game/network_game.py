@@ -7,6 +7,7 @@ import pickle
 
 # server side logic
 
+
 class HelloMsg:
 
     def __init__(self, msg='', client_id='0'):
@@ -155,8 +156,8 @@ class DedicatedServer:
 
                 conn.sendall(reply)  # reply.encode() if we use json
                 print(f'self.clients = {self.clients}')
-            except Exception:
-                break
+            except Exception as err:
+                print('Server Exception arose ', err)
 
         print("Lost connection\n")
         self.delete_player_from_server(pid)
@@ -233,7 +234,6 @@ class Client:
         self.client.close()
 
 
-
 class PlayerDataStruct:
 
     def __init__(self, player_id, pos: tuple = (0, 0), angle=0.0, health=0):
@@ -289,7 +289,6 @@ class ServerPlayerDataStruct(PlayerDataStruct):
     def __init__(self, conn, player_id="0"):
         x, y, angle, health = 0, 0, 0, 0
         super().__init__(player_id, (x, y), angle, health)
-        self.connection_instance = conn
 
 
 def main():
