@@ -1,3 +1,4 @@
+import pygame as pg
 from game_settings import *
 from player import Player, PlayerModel
 from network_game import Client, ClientPlayerDataStruct, ServerPlayerDataStruct, HelloMsg
@@ -12,15 +13,16 @@ class ObjectHandlerPlug:
 
 class App:
     def __init__(self):
+        pg.init()
         self.HOST = self.network_game = True
         self.object_handler = ObjectHandlerPlug()
 
         self.client = Client(self)
-        self.ghost = Ghost(self)
+        self.player = Ghost(self)
 
     def update(self):
         while True:
-            self.ghost.update()
+            self.player.update()
 
 
 class Ghost(Player):
