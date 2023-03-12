@@ -7,6 +7,22 @@ import pickle
 
 # server side logic
 
+class HelloMsg:
+
+    def __init__(self, msg='', client_id='0'):
+
+        self.client_id = client_id
+        self.msg = f'Player {client_id} connected'
+
+    @property
+    def pid(self):
+
+        return self.client_id
+
+    def set_client_id(self, client_id):
+        self.msg = f'Player {client_id} connected'
+        self.client_id = client_id
+
 
 class DedicatedServer:
     def __init__(self):
@@ -75,7 +91,7 @@ class DedicatedServer:
             print('no data prepared!')
 
     def new_prep_data(self, data: 'ClientPlayerDataStruct') -> tuple:
-        if isinstance(data, ClientPlayerDataStruct):
+        if data:
             x, y, angle, health = data.get_player_data()
             player_id = data.get_player_id()
             return float(x), float(y), float(angle), str(player_id)
@@ -83,8 +99,7 @@ class DedicatedServer:
 
     def update_player_data(self, player_struct: tuple, pid: str):
         x_pos, y_pos, angle, _ = player_struct
-        for _ in self.server_players.values():
-            self.server_players[pid].set_params((x_pos, y_pos), angle)
+        self.server_players[pid].set_params((x_pos, y_pos), angle)
 
     def get_player_data(self, pid: str):
         all_data = {}
@@ -105,7 +120,7 @@ class DedicatedServer:
         return all_data
 
     def threaded_client(self, conn, pid):
-        conn.send(pickle.dumps(pid))
+        conn.send(pickle.dumps(pid, protocol=pickle.HIGHEST_PROTOCOL))
         pid = pid.pid  # get str from class HelloMsg()
 
         reply = ''
@@ -136,7 +151,7 @@ class DedicatedServer:
                     all_data = self.new_get_player_data(pid)
                     print(f"Sending {all_data}\n")
 
-                    reply: bytes = pickle.dumps(all_data)  # json.dumps(all_data) if we use json structs
+                    reply: bytes = pickle.dumps(all_data, protocol=pickle.HIGHEST_PROTOCOL)  # json.dumps(all_data) if we use json structs
 
                 conn.sendall(reply)  # reply.encode() if we use json
                 print(f'self.clients = {self.clients}')
@@ -182,14 +197,17 @@ class Client:
         }
 
     def connect(self) -> 'HelloMsg':
-
+        data = ''
         try:
             self.client.connect(self.address)
-            data = self.client.recv(DATA_RECV_CHUNK)
-            data = pickle.loads(data)
-            return data
-        except:
-            pass
+            data: bytes = self.client.recv(DATA_RECV_CHUNK)
+            #time.sleep(2)
+            #data: HelloMsg = pickle.loads(data)
+
+        except Exception as err:
+            print(f'player {self.client_id} has an error ', err)
+
+        return data
 
     def get_init_pos(self) -> tuple:
         """
@@ -214,22 +232,6 @@ class Client:
     def close(self):
         self.client.close()
 
-
-class HelloMsg:
-
-    def __init__(self, msg='', client_id='0'):
-
-        self.client_id = client_id
-        self.msg = f'Player {client_id} connected'
-
-    @property
-    def pid(self):
-
-        return self.client_id
-
-    def set_client_id(self, client_id):
-        self.msg = f'Player {client_id} connected'
-        self.client_id = client_id
 
 
 class PlayerDataStruct:

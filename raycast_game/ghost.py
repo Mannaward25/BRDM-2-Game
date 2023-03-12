@@ -1,6 +1,6 @@
 from game_settings import *
 from player import Player, PlayerModel
-from network_game import Client, ClientPlayerDataStruct, ServerPlayerDataStruct
+from network_game import Client, ClientPlayerDataStruct, ServerPlayerDataStruct, HelloMsg
 
 """bot for tests"""
 

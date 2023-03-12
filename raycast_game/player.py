@@ -42,10 +42,12 @@ class Player:
 
     def try_connect(self):
         msg = self.client.connect()
-        if msg and isinstance(msg, HelloMsg):
+        msg = pickle.loads(msg)
+        if msg:
             num = msg.pid
             self.client.set_client_id(num)
             print(msg, f'from Client_id {num} .__init__')
+            del msg
             return True
         return False
 
@@ -169,7 +171,7 @@ class Player:
     def update_server_info(self, data: dict):
         self.number_of_players = len(data) + 1
 
-        if data and isinstance(data, dict):
+        if data:
             if data.keys() == self.players.keys():
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
