@@ -158,6 +158,7 @@ class DedicatedServer:
                 print(f'self.clients = {self.clients}')
             except Exception as err:
                 print('Server Exception arose ', err)
+                break
 
         print("Lost connection\n")
         self.delete_player_from_server(pid)
@@ -206,7 +207,7 @@ class Client:
             #data: HelloMsg = pickle.loads(data)
 
         except Exception as err:
-            print(f'player {self.client_id} has an error ', err)
+            print('error')
 
         return data
 
