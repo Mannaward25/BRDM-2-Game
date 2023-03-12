@@ -41,8 +41,8 @@ class Player:
             self.x, self.y = self.client.get_init_pos()
 
     def try_connect(self):
-        msg = self.client.connect()
-        msg = pickle.loads(msg)
+        msg: bytes = self.client.connect()
+        msg: HelloMsg = pickle.loads(msg)
         if msg:
             num = msg.pid
             self.client.set_client_id(num)
@@ -149,7 +149,7 @@ class Player:
     def update_player_instances(self, data: dict):  # unused yet
         for pid, instance in data.items():
             if pid not in self.players:
-                player_struct = self.test_parse_data(data[pid])
+                player_struct = self.parse_data(data[pid])
                 x, y, angle = player_struct
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].update()

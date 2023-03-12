@@ -197,7 +197,7 @@ class Client:
             '2': (2.5, 6.5)
         }
 
-    def connect(self) -> 'HelloMsg':
+    def connect(self) -> bytes:
         data = ''
         try:
             self.client.connect(self.address)
