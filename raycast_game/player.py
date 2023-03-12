@@ -162,8 +162,8 @@ class Player:
     def recv_data(self) -> dict:
         recv: bytes = self.client.client.recv(DATA_RECV_CHUNK)
         #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
-        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data  # YET TODO
-        msg: dict = pickle.loads(recv)
+        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
+        msg = pickle.loads(recv)
         return msg
 
     def update_server_info(self, data: dict):
