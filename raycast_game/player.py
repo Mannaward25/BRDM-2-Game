@@ -30,6 +30,9 @@ class Player:
         self.number_of_players = 0
         self.players = {}
 
+        self.angle_diff = 0
+        self.sin, self.cos = 0, 0
+
         tries = 0  # hardcode
         if self.game.HOST or self.game.network_game:
             while not self.try_connect() and tries < 3:
@@ -91,6 +94,8 @@ class Player:
     def movement(self):  # +
         sin_a = math.sin(self.angle)  # +
         cos_a = math.cos(self.angle)  # +
+        self.sin = sin_a
+        self.cos = cos_a
         dx, dy = 0, 0  # +
         speed = PLAYER_SPEED * self.game.delta_time  # +
         speed_sin = speed * sin_a  # +
@@ -145,18 +150,21 @@ class Player:
         self.rel = pg.mouse.get_rel()[0]
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
+        #print(self.angle)
 
     def update_player_instances(self, data: dict):  # unused yet
         for pid, instance in data.items():
             if pid not in self.players:
                 player_struct = self.parse_data(data[pid])
-                x, y, angle = player_struct
+                x, y, angle, sin, cos = player_struct
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
+                self.players[pid].position_diff((self.x, self.y), (x, y))
+                self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                 self.players[pid].update()
 
     def send_data(self):
         self.player_data.set_player_id(self.client.client_id)
-        self.player_data.set_params((self.x, self.y), self.angle, self.health)
+        self.player_data.set_params((self.x, self.y), self.angle, (self.sin, self.cos), self.health)
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
@@ -175,8 +183,11 @@ class Player:
             if data.keys() == self.players.keys():
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
-                    x, y, angle = player_struct
+                    x, y, angle, sin, cos = player_struct
                     self.players[pid].move(x, y)
+                    self.players[pid].position_diff((self.x, self.y), (x, y))
+                    #self.players[pid].show_theta()
+                    self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                     self.players[pid].update()
             else:
                 self.update_player_instances(data)
@@ -186,8 +197,8 @@ class Player:
         return float(x), float(y), float(angle)
 
     def parse_data(self, obj_data: ServerPlayerDataStruct) -> tuple:
-        x, y, angle, _ = obj_data.get_params()
-        return float(x), float(y), float(angle)
+        x, y, angle, health, sin, cos = obj_data.get_params()
+        return float(x), float(y), float(angle), float(sin), float(cos)
 
     def update(self):  # +
         self.movement()
@@ -223,11 +234,61 @@ class PlayerModel(AnimatedSprite):
         self.pain_images = self.get_images(self.path + '/pain')
         self.walk_images = self.get_images(self.path + '/walk')
 
+        # rotation
+        self.angle_difference = 0
+        self.model_angle = 0
+        self.theta_model = 0  # player theta
+        self.sin, self.cos = 0, 0
+        """
+        0 - front
+        1 - left_front
+        2 - left
+        3 - left_rear
+        4 - rear
+        5 - right_rear
+        6 - right
+        7 - right_front
+        """
+        self.player_view = {
+            0: self.get_image(self.path + '/idle' + '/0.png'),
+            4: self.get_image(self.path + '/idle' + '/4.png')
+        }
+
     def move(self, x, y):
         self.x = x
         self.y = y
 
+    def rotation_image(self, player_polar, model_polar):
+        angle_degrees = math.degrees(self.theta_model)
+        p_sin, p_cos = player_polar
+        m_sin, m_cos = model_polar
+        print(f'player polars: ({p_sin}, {p_cos}); model polars: ({m_sin}, {m_cos}); angle: ({angle_degrees})')
+        pass # to_do
+
+    def get_image(self, path):
+        img = pg.image.load(path).convert_alpha()
+        return img
+
+    def set_angle_diff(self, player_angle, model_angle):
+        self.model_angle = model_angle
+        diff1 = abs(player_angle - model_angle)
+        diff2 = abs(diff1 - math.tau)
+        min_diff = min(diff1, diff2)
+        self.angle_difference = min_diff
+
+    def position_diff(self, player_pos, model_pos):
+        px, py = player_pos
+        mx, my = model_pos
+        diff_x, diff_y = abs(px - mx), abs(py - my)
+        self.theta_model = math.atan2(diff_y, diff_x)  # player_theta
+
+    def player_direction(self, player_polar, model_polar):  # player_polar(sin, cos), model_polar(sin, cos)
+        self.image = self.rotation_image(player_polar, model_polar)
+
+    def show_theta(self):
+        print(self.theta_model, f'{math.degrees(self.theta_model)} degrees')
+
     def update(self):
         self.check_animation_time()
         self.get_sprite()
-        self.animate(self.idle_images)
+        #self.animate(self.idle_images)

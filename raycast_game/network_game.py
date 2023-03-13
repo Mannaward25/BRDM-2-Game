@@ -79,37 +79,37 @@ class DedicatedServer:
         print(f'deleted player with id {pid}')
         return pid
 
-    def test_prep_data(self, data: str) -> tuple:  # will be replaced
-        """test function to cook raw data from string to tuple
-            format: float(x), float(y), float(angle), int(id)
-        """
-        data = data.split(',')
-        if len(data) == 4:  # check if struct has 4 variables
-            x, y, angle, player_id = data
-
-            return float(x), float(y), float(angle), str(player_id)
-        else:
-            print('no data prepared!')
+    # def test_prep_data(self, data: str) -> tuple:  # will be replaced
+    #     """test function to cook raw data from string to tuple
+    #         format: float(x), float(y), float(angle), int(id)
+    #     """
+    #     data = data.split(',')
+    #     if len(data) == 4:  # check if struct has 4 variables
+    #         x, y, angle, player_id = data
+    #
+    #         return float(x), float(y), float(angle), str(player_id)
+    #     else:
+    #         print('no data prepared!')
 
     def new_prep_data(self, data: 'ClientPlayerDataStruct') -> tuple:
         if data:
-            x, y, angle, health = data.get_player_data()
+            x, y, angle, health, sin, cos = data.get_player_data()
             player_id = data.get_player_id()
-            return float(x), float(y), float(angle), str(player_id)
+            return float(x), float(y), float(angle), float(sin), float(cos), str(player_id)
         return tuple()
 
     def update_player_data(self, player_struct: tuple, pid: str):
-        x_pos, y_pos, angle, _ = player_struct
-        self.server_players[pid].set_params((x_pos, y_pos), angle)
+        x_pos, y_pos, angle, sin, cos, _ = player_struct
+        self.server_players[pid].set_params((x_pos, y_pos), angle, (sin, cos))
 
-    def get_player_data(self, pid: str):
-        all_data = {}
-
-        for player_id, player_instance in self.server_players.items():
-            if pid != player_instance.get_player_id():
-                other_player_id, data = player_instance.get_all_data()
-                all_data[other_player_id] = data
-        return all_data
+    # def get_player_data(self, pid: str):
+    #     all_data = {}
+    #
+    #     for player_id, player_instance in self.server_players.items():
+    #         if pid != player_instance.get_player_id():
+    #             other_player_id, data = player_instance.get_all_data()
+    #             all_data[other_player_id] = data
+    #     return all_data
 
     def new_get_player_data(self, pid: str):
         all_data = {}
@@ -242,14 +242,16 @@ class PlayerDataStruct:
         self.x, self.y = pos
         self.angle = angle
         self.health = health
+        self.sin, self.cos = 0, 0
 
-    def set_params(self, pos: tuple, angle, health=0):
+    def set_params(self, pos: tuple, angle, polars=(0, 0), health=0):
         self.x, self.y = pos
         self.angle = angle
         self.health = health
+        self.sin, self.cos = polars
 
     def get_params(self):
-        return self.x, self.y, self.angle, self.health
+        return self.x, self.y, self.angle, self.health, self.sin, self.cos
 
     def set_player_id(self, player_id):
         self.player_id = player_id
@@ -258,7 +260,7 @@ class PlayerDataStruct:
         return self.player_id
 
     def get_player_data(self):
-        return self.x, self.y, self.angle, self.health
+        return self.x, self.y, self.angle, self.health, self.sin, self.cos
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
