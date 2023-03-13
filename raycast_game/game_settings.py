@@ -93,6 +93,18 @@ DATA_RECV_CHUNK = 1024
 LOCAL_SERVER_IP = '192.168.1.110'  # 192.168.1.110, 192.168.1.129
 
 PLAYER_MODEL_CONSTANT = 22.5  # degrees
+HALF_PI = math.pi / 2
+H_PI_DEG = math.degrees(HALF_PI)
+
+# directions
+EAST = (1, 0)
+WEST = (-1, 0)
+NORTH = (0, -1)
+SOUTH = (0, 1)
+NE = (1, -1)
+NW = (-1, -1)
+SE = (1, 1)
+SW = (-1, 1)
 
 # messages
 CLOSE = 'close'

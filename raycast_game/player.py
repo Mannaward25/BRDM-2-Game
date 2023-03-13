@@ -158,6 +158,7 @@ class Player:
                 player_struct = self.parse_data(data[pid])
                 x, y, angle, sin, cos = player_struct
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
+                self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
                 self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                 self.players[pid].update()
@@ -185,8 +186,9 @@ class Player:
                     player_struct = self.parse_data(data[pid])
                     x, y, angle, sin, cos = player_struct
                     self.players[pid].move(x, y)
+                    self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
-                    #self.players[pid].show_theta()
+                    self.players[pid].show_theta()
                     self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                     self.players[pid].update()
             else:
@@ -237,8 +239,12 @@ class PlayerModel(AnimatedSprite):
         # rotation
         self.angle_difference = 0
         self.model_angle = 0
-        self.theta_model = 0  # player theta
+        self.player_angle = 0
+        self.player_angle_standard = 0
+        self.player_theta = 0  # player_theta
         self.sin, self.cos = 0, 0
+        self.model_dir = EAST
+        self.player_dir = EAST
         """
         0 - front
         1 - left_front
@@ -251,19 +257,130 @@ class PlayerModel(AnimatedSprite):
         """
         self.player_view = {
             0: self.get_image(self.path + '/idle' + '/0.png'),
-            4: self.get_image(self.path + '/idle' + '/4.png')
+            1: self.get_image(self.path + '/idle' + '/1.png'),
+            2: self.get_image(self.path + '/idle' + '/2.png'),
+            3: self.get_image(self.path + '/idle' + '/3.png'),
+            4: self.get_image(self.path + '/idle' + '/4.png'),
+            5: self.get_image(self.path + '/idle' + '/5.png'),
+            6: self.get_image(self.path + '/idle' + '/6.png'),
+            7: self.get_image(self.path + '/idle' + '/7.png')
         }
 
     def move(self, x, y):
         self.x = x
         self.y = y
 
-    def rotation_image(self, player_polar, model_polar):
-        angle_degrees = math.degrees(self.theta_model)
+    def directions(self, player_polar, model_polar):
         p_sin, p_cos = player_polar
         m_sin, m_cos = model_polar
-        print(f'player polars: ({p_sin}, {p_cos}); model polars: ({m_sin}, {m_cos}); angle: ({angle_degrees})')
-        pass # to_do
+
+        # model_direction
+        self.model_dir = self.get_direction(m_sin, m_cos, self.player_theta)
+        self.player_dir = self.get_direction(p_sin, p_cos, self.player_angle_standard)
+
+    @staticmethod
+    def get_direction(sin, cos, standard_angle):
+        player_const = math.radians(PLAYER_MODEL_CONSTANT)
+        sin += 0.000000001
+        cos += 0.000000001
+
+        if (cos > 0 and (sin > 0 or sin < 0)) and standard_angle <= player_const:
+            return EAST
+        elif (cos < 0 and (sin > 0 or sin < 0)) and standard_angle <= player_const:
+            return WEST
+        elif (sin < 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle < HALF_PI + player_const:
+            return NORTH
+        elif (sin > 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle < HALF_PI + player_const:
+            return SOUTH
+        elif (cos > 0 and sin > 0) and player_const < standard_angle < HALF_PI - player_const:
+            return SE
+        elif (cos < 0 < sin) and player_const < standard_angle < HALF_PI - player_const:
+            return SW
+        elif (cos > 0 > sin) and player_const < standard_angle < HALF_PI - player_const:
+            return NE
+        elif (cos < 0 > sin) and player_const < standard_angle < HALF_PI - player_const:
+            return NW
+
+    def check_directions_variables(self):
+        if not self.player_dir:
+            self.player_dir = EAST
+        if not self.model_dir:
+            self.model_dir = EAST
+
+        px, py = self.player_dir
+        mx, my = self.model_dir
+        return px, py, mx, my
+
+    def is_complanar(self) -> bool:
+        px, py, mx, my = self.check_directions_variables()
+
+        if ((px == mx) and px != 0) or ((py == my) and py != 0):
+            return True
+        return False
+
+    def is_perpend(self) -> bool:
+        """is perpendicular"""
+        px, py, mx, my = self.check_directions_variables()
+
+        if ((px, py) == NORTH or (px, py) == SOUTH) and ((mx, my) == EAST or (mx, my) == WEST):
+            return True
+        elif ((px, py) == EAST or (px, py) == WEST) and ((mx, my) == NORTH or (mx, my) == SOUTH):
+            return True
+        elif ((px, py) == NE or (px, py) == SW) and ((mx, my) == NW or (mx, my) == SE):
+            return True
+        elif ((px, py) == NW or (px, py) == SE) and ((mx, my) == NE or (mx, my) == SW):
+            return True
+        return False
+
+    def is_right(self) -> bool:
+        px, py, mx, my = self.check_directions_variables()
+        if ((px, py) == NORTH and (mx, my) == EAST) or ((px, py) == SOUTH and (mx, my) == WEST):
+            return True
+        # elif ((px, py) == EAST and (mx, my) == EAST) finish
+        elif ((px, py) == EAST and (mx, my) == SOUTH) or ((px, py) == WEST and (mx, my) == NORTH):
+            return True
+        elif ((px, py) == NW and (mx, my) == NE) or ((px, py) == SE and (mx, my) == SW):
+            return True
+        elif ((px, py) == NE and (mx, my) == SE) or ((px, py) == SW and (mx, my) == NW):
+            return True
+        return False
+
+    def rotation_image(self, player_polar, model_polar):
+        angle_degrees = math.degrees(self.player_theta)
+        p_sin, p_cos = player_polar
+        m_sin, m_cos = model_polar
+
+        self.directions(player_polar, model_polar)
+        left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
+        right_border = H_PI_DEG + PLAYER_MODEL_CONSTANT
+        print(f'player polars: ({p_sin}, {p_cos}); '
+              f'model polars: ({m_sin}, {m_cos}); '
+              f'angle: ({angle_degrees}); player_dir: {self.player_dir}; model_dir: {self.model_dir}')
+
+        if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
+            return self.player_view[0]
+        elif angle_degrees < PLAYER_MODEL_CONSTANT and self.is_complanar() and not self.is_perpend():
+            return self.player_view[4]
+        elif left_border < angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and self.is_perpend():
+            if self.is_right():
+                return self.player_view[6]
+            return self.player_view[2]
+        elif PLAYER_MODEL_CONSTANT < angle_degrees <= left_border and not self.is_complanar() and not self.is_perpend():
+            if self.is_right():
+                return self.player_view[7]
+            return self.player_view[1]
+        elif PLAYER_MODEL_CONSTANT < angle_degrees <= left_border and self.is_complanar() and not self.is_perpend():
+            if self.is_right():
+                return self.player_view[5]
+            return self.player_view[3]
+        else:
+            return self.player_view[0]
+
+        # elif PLAYER_MODEL_CONSTANT < abs(angle_degrees) <= left_border and not self.is_complanar() and not self.is_perpend():
+        #     if self.is_right():
+        #         return self.player_view[7]
+        #     return self.player_view[1]
+
 
     def get_image(self, path):
         img = pg.image.load(path).convert_alpha()
@@ -271,22 +388,40 @@ class PlayerModel(AnimatedSprite):
 
     def set_angle_diff(self, player_angle, model_angle):
         self.model_angle = model_angle
+        self.player_angle = player_angle
+        self.player_angle_standard = self.standardize_angle(player_angle)
         diff1 = abs(player_angle - model_angle)
         diff2 = abs(diff1 - math.tau)
         min_diff = min(diff1, diff2)
         self.angle_difference = min_diff
 
+    def standardize_angle(self, angle):
+        if (angle % HALF_PI) == 0 and angle // HALF_PI > 0:
+            angle = HALF_PI
+        elif (angle % HALF_PI) != 0 and (angle // HALF_PI) % 2 == 0:
+            angle = angle % HALF_PI
+        elif (angle % HALF_PI) != 0 and (angle // HALF_PI) % 2 == 1:
+            angle = HALF_PI - (angle % HALF_PI)
+        elif (angle % HALF_PI) == 0 and angle // HALF_PI == 0:
+            angle = 0.0
+
+        return angle
+
     def position_diff(self, player_pos, model_pos):
         px, py = player_pos
         mx, my = model_pos
         diff_x, diff_y = abs(px - mx), abs(py - my)
-        self.theta_model = math.atan2(diff_y, diff_x)  # player_theta
+
+        player_theta_tmp = math.atan2(diff_y, diff_x)
+        player_theta = abs(player_theta_tmp - self.model_angle)
+
+        self.player_theta = self.standardize_angle(player_theta)  # player_theta
 
     def player_direction(self, player_polar, model_polar):  # player_polar(sin, cos), model_polar(sin, cos)
         self.image = self.rotation_image(player_polar, model_polar)
 
     def show_theta(self):
-        print(self.theta_model, f'{math.degrees(self.theta_model)} degrees')
+        print(self.player_theta, f'{math.degrees(self.player_theta)} degrees')
 
     def update(self):
         self.check_animation_time()
