@@ -403,10 +403,7 @@ class PlayerModel(AnimatedSprite):
         #       f'model_dir: {self.dirs[self.model_dir]}; '
         #       f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
 
-        if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend() and not self.is_walking:
-            return self.player_view[0]
-        elif angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend() and self.is_walking:
-            self.animate(self.walk_images)
+        if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
             return self.player_view[0]
         elif angle_degrees < PLAYER_MODEL_CONSTANT and self.is_complanar() and not self.is_perpend():
             return self.player_view[4]
@@ -486,7 +483,7 @@ class PlayerModel(AnimatedSprite):
 
     def walking(self):
         """includes self.animate_walk()"""
-        pass
+        self.animate(self.walk_images)
 
     def check_hit(self):
         pass
@@ -499,8 +496,8 @@ class PlayerModel(AnimatedSprite):
                 self.animate_pain()
 
             if self.is_walking:
-                #self.walking()
-                self.idle_moves(player_polar, model_polar)
+                self.walking()
+                #self.idle_moves(player_polar, model_polar)
             else:
                 self.idle_moves(player_polar, model_polar)
         else:
