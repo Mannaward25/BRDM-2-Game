@@ -311,17 +311,17 @@ class PlayerModel(AnimatedSprite):
             return EAST
         elif (cos < 0 and (sin > 0 or sin < 0)) and standard_angle <= player_const:
             return WEST
-        elif (sin < 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle < HALF_PI + player_const:
+        elif (sin < 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle <= HALF_PI:
             return NORTH
-        elif (sin > 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle < HALF_PI + player_const:
+        elif (sin > 0 and (cos > 0 or cos < 0)) and HALF_PI - player_const < standard_angle <= HALF_PI:
             return SOUTH
-        elif (cos > 0 and sin > 0) and player_const < standard_angle < HALF_PI - player_const:
+        elif (cos > 0 and sin > 0) and player_const < standard_angle <= HALF_PI - player_const:
             return SE
-        elif (cos < 0 < sin) and player_const < standard_angle < HALF_PI - player_const:
+        elif (cos < 0 < sin) and player_const < standard_angle <= HALF_PI - player_const:
             return SW
-        elif (cos > 0 > sin) and player_const < standard_angle < HALF_PI - player_const:
+        elif (cos > 0 > sin) and player_const < standard_angle <= HALF_PI - player_const:
             return NE
-        elif (cos < 0 > sin) and player_const < standard_angle < HALF_PI - player_const:
+        elif (cos < 0 > sin) and player_const < standard_angle <= HALF_PI - player_const:
             return NW
 
     def check_directions_variables(self):
