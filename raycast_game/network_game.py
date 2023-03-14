@@ -245,12 +245,23 @@ class PlayerDataStruct:
         self.sin, self.cos = 0, 0
         self.is_walking = walk
 
+        # shot state
+        self.shot = False
+        self.damage = 0
+
     def set_params(self, pos: tuple, angle, polars=(0, 0), walk=False, health=0):
         self.x, self.y = pos
         self.angle = angle
         self.health = health
         self.sin, self.cos = polars
         self.is_walking = walk
+
+    def set_shot_state(self, shot: bool, damage: int):
+        self.shot = shot
+        self.damage = damage
+
+    def get_shot_state(self):
+        return self.shot, self.damage
 
     def get_params(self):
         return self.x, self.y, self.angle, self.health, self.sin, self.cos

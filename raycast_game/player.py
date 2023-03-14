@@ -28,6 +28,10 @@ class Player:
         self.number_of_players = 0
         self.players = {}
 
+        self.ray_cast_visible = {}  # {pid: bool(value)}
+        self.eye_contact = {}  # {pid: bool(value)}
+        self.alive = True
+
         self.angle_diff = 0
         self.sin, self.cos = 0, 0
         self.is_walking = False
@@ -152,19 +156,26 @@ class Player:
         self.rel = pg.mouse.get_rel()[0]
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
-        #print(self.angle)
 
-    def update_player_instances(self, data: dict):  # unused yet
+    def update_player_instances(self, data: dict):
+        if len(data) < len(self.players):  # deletes quited players
+            pid_to_delete = None
+            for pid, instance in self.players.items():
+                if pid not in data:
+                    pid_to_delete = pid
+
+            print(f'player id {pid_to_delete} quit the server')
+            del self.players[pid_to_delete]
+
         for pid, instance in data.items():
             if pid not in self.players:
                 player_struct = self.parse_data(data[pid])
                 x, y, angle, sin, cos, walk = player_struct
+                self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
                 self.players[pid].set_other_params(walk)
-
-                #self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
 
                 self.players[pid].update_model((self.sin, self.cos), (sin, cos))
 
@@ -173,6 +184,8 @@ class Player:
         self.player_data.set_params((self.x, self.y), self.angle,
                                     (self.sin, self.cos),
                                     self.is_walking, self.health)
+
+        self.player_data.set_shot_state(self.shot, self.game.weapon.damage)  # send damage info!
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
@@ -192,12 +205,12 @@ class Player:
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
                     x, y, angle, sin, cos, walk = player_struct
+                    self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
                     self.players[pid].move(x, y)
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
                     self.players[pid].show_theta()
                     self.players[pid].set_other_params(walk)
-                    #self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
 
                     self.players[pid].update_model((self.sin, self.cos), (sin, cos))
             else:
@@ -207,9 +220,84 @@ class Player:
         x, y, angle = string_data.split(',')
         return float(x), float(y), float(angle)
 
-    def parse_data(self, obj_data: ServerPlayerDataStruct) -> tuple:
-        x, y, angle, health, sin, cos, walk = obj_data.get_player_data()
-        return float(x), float(y), float(angle), float(sin), float(cos), bool(walk)
+    def parse_data(self, obj_data: ServerPlayerDataStruct, raycast=False) -> tuple:
+        if raycast:
+            x, y = obj_data.get_pos()
+            return float(x), float(y)
+        else:
+            x, y, angle, health, sin, cos, walk = obj_data.get_player_data()
+            return float(x), float(y), float(angle), float(sin), float(cos), bool(walk)
+
+    def player_to_player_ray_cast(self, other_pos) -> bool:
+        # calc theta
+        if self.pos == other_pos:
+            return True
+
+        other_x, other_y = other_pos
+        dx = other_x - self.x
+        dy = other_y - self.y
+        other_map_pos = int(other_x), int(other_y)
+        theta = math.atan2(dy, dx)
+
+        # calc ray cast
+        wall_dist_v, wall_dist_h = 0, 0
+        player_dist_v, player_dist_h = 0, 0
+
+        ox, oy = self.game.player.pos
+        x_map, y_map = self.game.player.map_pos
+
+        ray_angle = theta
+        sin_a = math.sin(ray_angle)
+        cos_a = math.cos(ray_angle)
+
+        # horizontal lines of tiles
+        y_hor, dy = (y_map + 1, 1) if sin_a > 0 else (y_map - 1e-6, -1)
+
+        depth_hor = (y_hor - oy) / sin_a
+        x_hor = ox + depth_hor * cos_a
+
+        delta_depth = dy / sin_a
+        dx = delta_depth * cos_a
+
+        for i in range(MAX_DEPTH):
+            tile_hor = int(x_hor), int(y_hor)
+            if tile_hor == other_map_pos:
+                player_dist_h = depth_hor
+                break
+            if tile_hor in self.game.map.world_map:
+                wall_dist_h = depth_hor
+                break
+            x_hor += dx
+            y_hor += dy
+            depth_hor += delta_depth
+
+        # verticals lines of tiles
+        x_vert, dx = (x_map + 1, 1) if cos_a > 0 else (x_map - 1e-6, -1)
+
+        depth_vert = (x_vert - ox) / cos_a
+        y_vert = oy + depth_vert * sin_a  # timecode 11:00
+
+        delta_depth = dx / cos_a
+        dy = delta_depth * sin_a
+
+        for i in range(MAX_DEPTH):
+            tile_vert = int(x_vert), int(y_vert)
+            if tile_vert == other_map_pos:
+                player_dist_v = depth_vert
+                break
+            if tile_vert in self.game.map.world_map:
+                wall_dist_v = depth_vert
+                break
+            x_vert += dx
+            y_vert += dy
+            depth_vert += delta_depth
+
+        player_dist = max(player_dist_v, player_dist_h)
+        wall_dist = max(wall_dist_v, wall_dist_h)
+
+        if 0 < player_dist < wall_dist or not wall_dist:
+            return True
+        return False
 
     def update(self):  # +
         self.movement()
@@ -247,6 +335,8 @@ class PlayerModel(AnimatedSprite):
 
         # rotation
         self.angle_difference = 0
+        self.player_pos = (0, 0)
+        self.model_pos = pos
         self.model_angle = 0
         self.player_angle = 0
         self.player_angle_standard = 0
@@ -261,6 +351,8 @@ class PlayerModel(AnimatedSprite):
         self.alive = True
         self.pain = False
         self.is_attacking = False
+        self.ray_cast_visible = False
+
         """
         0 - front
         1 - left_front
@@ -449,6 +541,8 @@ class PlayerModel(AnimatedSprite):
         return angle
 
     def position_diff(self, player_pos, model_pos):
+        self.model_pos = model_pos
+        self.player_pos = player_pos
         px, py = player_pos
         mx, my = model_pos
         diff_x, diff_y = abs(px - mx), abs(py - my)
@@ -478,9 +572,6 @@ class PlayerModel(AnimatedSprite):
     def animate_death(self):
         pass
 
-    def animate_walk(self):
-        pass
-
     def walking(self):
         """includes self.animate_walk()"""
         if not self.is_complanar() and not self.is_perpend():
@@ -498,6 +589,7 @@ class PlayerModel(AnimatedSprite):
 
     def update_model(self, player_polar, model_polar):
         if self.alive:
+
             self.check_hit()
 
             if self.pain:
@@ -505,7 +597,6 @@ class PlayerModel(AnimatedSprite):
 
             if self.is_walking:
                 self.walking()
-                #self.idle_moves(player_polar, model_polar)
             else:
                 self.idle_moves(player_polar, model_polar)
         else:
