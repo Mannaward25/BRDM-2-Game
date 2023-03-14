@@ -254,7 +254,20 @@ class PlayerModel(AnimatedSprite):
         5 - right_rear
         6 - right
         7 - right_front
+        
         """
+
+        self.dirs = {
+            NORTH: 'NORTH',
+            SOUTH: 'SOUTH',
+            EAST: 'EAST',
+            WEST: 'WEST',
+            NE: 'NORTH_EAST',
+            NW: 'NORTH_WEST',
+            SE: 'SOUTH_EAST',
+            SW: 'SOUTH_WEST'
+        }
+
         self.player_view = {
             0: self.get_image(self.path + '/idle' + '/0.png'),
             1: self.get_image(self.path + '/idle' + '/1.png'),
@@ -372,9 +385,9 @@ class PlayerModel(AnimatedSprite):
         self.directions(player_polar, model_polar)
         left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
         right_border = H_PI_DEG + PLAYER_MODEL_CONSTANT
-        print(f'angle: ({angle_degrees}); '
-              f'player_dir: {self.player_dir}; '
-              f'model_dir: {self.model_dir}; '
+        print(f'angle: ({angle_degrees} degrees); '
+              f'player_dir: {self.dirs[self.player_dir]}; '
+              f'model_dir: {self.dirs[self.model_dir]}; '
               f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
 
         if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
