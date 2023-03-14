@@ -241,6 +241,7 @@ class PlayerModel(AnimatedSprite):
         self.model_angle = 0
         self.player_angle = 0
         self.player_angle_standard = 0
+        self.model_angle_standard = 0
         self.player_theta = 0  # player_theta
         self.sin, self.cos = 0, 0
         self.model_dir = EAST
@@ -288,7 +289,7 @@ class PlayerModel(AnimatedSprite):
         m_sin, m_cos = model_polar
 
         # model_direction
-        self.model_dir = self.get_direction(m_sin, m_cos, self.player_theta)
+        self.model_dir = self.get_direction(m_sin, m_cos, self.model_angle_standard)
         self.player_dir = self.get_direction(p_sin, p_cos, self.player_angle_standard)
 
     @staticmethod
@@ -423,6 +424,7 @@ class PlayerModel(AnimatedSprite):
         self.model_angle = model_angle
         self.player_angle = player_angle
         self.player_angle_standard = self.standardize_angle(player_angle)
+        self.player_angle_standard = self.standardize_angle(model_angle)
         diff1 = abs(player_angle - model_angle)
         diff2 = abs(diff1 - math.tau)
         min_diff = min(diff1, diff2)
