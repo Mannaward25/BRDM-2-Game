@@ -94,9 +94,6 @@ class Player:
                 self.shot = True
                 self.game.weapon.reloading = True
 
-    def movement_event(self, event):
-        pass
-
     def movement(self):  # +
         sin_a = math.sin(self.angle)  # +
         cos_a = math.cos(self.angle)  # +
@@ -157,7 +154,7 @@ class Player:
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
 
-    def update_player_instances(self, data: dict):
+    def delete_player_instance(self, data: dict):
         if len(data) < len(self.players):  # deletes quited players
             pid_to_delete = None
             for pid, instance in self.players.items():
@@ -166,6 +163,9 @@ class Player:
 
             print(f'player id {pid_to_delete} quit the server')
             del self.players[pid_to_delete]
+
+    def update_player_instances(self, data: dict):
+        self.delete_player_instance(data)
 
         for pid, instance in data.items():
             if pid not in self.players:
@@ -215,6 +215,8 @@ class Player:
                     self.players[pid].update_model((self.sin, self.cos), (sin, cos))
             else:
                 self.update_player_instances(data)
+        else:
+            self.delete_player_instance(data)
 
     def test_parse_data(self, string_data: str) -> tuple:
         x, y, angle = string_data.split(',')
