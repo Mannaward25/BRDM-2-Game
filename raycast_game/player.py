@@ -488,7 +488,8 @@ class PlayerModel(AnimatedSprite):
         elif self.is_perpend():
             if self.is_right():
                 self.image = self.player_view[6]
-            self.image = self.player_view[2]
+            else:
+                self.image = self.player_view[2]
         else:
             self.image = self.player_view[4]
 
