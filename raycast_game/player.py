@@ -424,7 +424,7 @@ class PlayerModel(AnimatedSprite):
         self.model_angle = model_angle
         self.player_angle = player_angle
         self.player_angle_standard = self.standardize_angle(player_angle)
-        self.player_angle_standard = self.standardize_angle(model_angle)
+        self.model_angle_standard = self.standardize_angle(model_angle)
         diff1 = abs(player_angle - model_angle)
         diff2 = abs(diff1 - math.tau)
         min_diff = min(diff1, diff2)
