@@ -485,6 +485,10 @@ class PlayerModel(AnimatedSprite):
         """includes self.animate_walk()"""
         if not self.is_complanar() and not self.is_perpend():
             self.animate(self.walk_images)
+        elif self.is_perpend():
+            if self.is_right():
+                self.image = self.player_view[6]
+            self.image = self.player_view[2]
         else:
             self.image = self.player_view[4]
 
