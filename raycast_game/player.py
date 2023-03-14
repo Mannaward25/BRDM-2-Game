@@ -372,9 +372,10 @@ class PlayerModel(AnimatedSprite):
         self.directions(player_polar, model_polar)
         left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
         right_border = H_PI_DEG + PLAYER_MODEL_CONSTANT
-        print(f'player polars: ({p_sin}, {p_cos}); '
-              f'model polars: ({m_sin}, {m_cos}); '
-              f'angle: ({angle_degrees}); player_dir: {self.player_dir}; model_dir: {self.model_dir}')
+        print(f'angle: ({angle_degrees}); '
+              f'player_dir: {self.player_dir}; '
+              f'model_dir: {self.model_dir}; '
+              f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
 
         if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
             return self.player_view[0]
