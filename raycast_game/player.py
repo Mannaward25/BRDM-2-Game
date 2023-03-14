@@ -162,9 +162,11 @@ class Player:
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
-                self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                 self.players[pid].set_other_params(walk)
-                self.players[pid].update()
+
+                #self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
+
+                self.players[pid].update_model((self.sin, self.cos), (sin, cos))
 
     def send_data(self):
         self.player_data.set_player_id(self.client.client_id)
@@ -194,9 +196,10 @@ class Player:
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
                     self.players[pid].show_theta()
-                    self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
                     self.players[pid].set_other_params(walk)
-                    self.players[pid].update()
+                    #self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
+
+                    self.players[pid].update_model((self.sin, self.cos), (sin, cos))
             else:
                 self.update_player_instances(data)
 
@@ -464,7 +467,12 @@ class PlayerModel(AnimatedSprite):
     def set_other_params(self, walk):
         self.is_walking = walk
 
-    def update(self):
+    def update_model(self, player_polar, model_polar):
+        if self.is_walking:
+            self.player_direction(player_polar, model_polar)
+        else:
+            self.player_direction(player_polar, model_polar)
+
         self.check_animation_time()
         self.get_sprite()
         self.show_walk()
