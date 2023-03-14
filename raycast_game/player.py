@@ -334,15 +334,34 @@ class PlayerModel(AnimatedSprite):
 
     def is_right(self) -> bool:
         px, py, mx, my = self.check_directions_variables()
+
         if ((px, py) == NORTH and (mx, my) == EAST) or ((px, py) == SOUTH and (mx, my) == WEST):
             return True
-        # elif ((px, py) == EAST and (mx, my) == EAST) finish
         elif ((px, py) == EAST and (mx, my) == SOUTH) or ((px, py) == WEST and (mx, my) == NORTH):
             return True
         elif ((px, py) == NW and (mx, my) == NE) or ((px, py) == SE and (mx, my) == SW):
             return True
         elif ((px, py) == NE and (mx, my) == SE) or ((px, py) == SW and (mx, my) == NW):
             return True
+
+        elif (px, py) == NORTH and ((mx, my) == NE or (mx, my) == SE):
+            return True
+        elif (px, py) == SOUTH and ((mx, my) == NW or (mx, my) == SW):
+            return True
+        elif (px, py) == EAST and ((mx, my) == SW or (mx, my) == SE):
+            return True
+        elif (px, py) == WEST and ((mx, my) == NW or (mx, my) == NE):
+            return True
+
+        elif (px, py) == NW and ((mx, my) == NORTH or (mx, my) == EAST):
+            return True
+        elif (px, py) == SE and ((mx, my) == EAST or (mx, my) == SOUTH):
+            return True
+        elif (px, py) == SW and ((mx, my) == NORTH or (mx, my) == WEST):
+            return True
+        elif (px, py) == NE and ((mx, my) == EAST or (mx, my) == SOUTH):
+            return True
+
         return False
 
     def rotation_image(self, player_polar, model_polar):
