@@ -93,14 +93,14 @@ class DedicatedServer:
 
     def new_prep_data(self, data: 'ClientPlayerDataStruct') -> tuple:
         if data:
-            x, y, angle, health, sin, cos = data.get_player_data()
+            x, y, angle, health, sin, cos, walk = data.get_player_data()
             player_id = data.get_player_id()
-            return float(x), float(y), float(angle), float(sin), float(cos), str(player_id)
+            return float(x), float(y), float(angle), float(sin), float(cos), bool(walk), str(player_id)
         return tuple()
 
     def update_player_data(self, player_struct: tuple, pid: str):
-        x_pos, y_pos, angle, sin, cos, _ = player_struct
-        self.server_players[pid].set_params((x_pos, y_pos), angle, (sin, cos))
+        x_pos, y_pos, angle, sin, cos, walk, _ = player_struct
+        self.server_players[pid].set_params(pos=(x_pos, y_pos), angle=angle, polars=(sin, cos), walk=walk)
 
     # def get_player_data(self, pid: str):
     #     all_data = {}
@@ -237,18 +237,20 @@ class Client:
 
 class PlayerDataStruct:
 
-    def __init__(self, player_id, pos: tuple = (0, 0), angle=0.0, health=0):
+    def __init__(self, player_id, pos: tuple = (0, 0), angle=0.0, walk=False, health=0):
         self.player_id = player_id
         self.x, self.y = pos
         self.angle = angle
         self.health = health
         self.sin, self.cos = 0, 0
+        self.is_walking = walk
 
-    def set_params(self, pos: tuple, angle, polars=(0, 0), health=0):
+    def set_params(self, pos: tuple, angle, polars=(0, 0), walk=False, health=0):
         self.x, self.y = pos
         self.angle = angle
         self.health = health
         self.sin, self.cos = polars
+        self.is_walking = walk
 
     def get_params(self):
         return self.x, self.y, self.angle, self.health, self.sin, self.cos
@@ -260,7 +262,7 @@ class PlayerDataStruct:
         return self.player_id
 
     def get_player_data(self):
-        return self.x, self.y, self.angle, self.health, self.sin, self.cos
+        return self.x, self.y, self.angle, self.health, self.sin, self.cos, self.is_walking
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
@@ -284,14 +286,16 @@ class ClientPlayerDataStruct(PlayerDataStruct):
     """
     def __init__(self, player_id='0'):
         x, y, angle, health = 0, 0, 0, 0
-        super().__init__(player_id, (x, y), angle, health)
+        walk = False
+        super().__init__(player_id, (x, y), angle, walk, health)
 
 
 class ServerPlayerDataStruct(PlayerDataStruct):
     """what we will store in server memory"""
     def __init__(self, conn, player_id="0"):
         x, y, angle, health = 0, 0, 0, 0
-        super().__init__(player_id, (x, y), angle, health)
+        walk = False
+        super().__init__(player_id, (x, y), angle, walk, health)
 
 
 def main():

@@ -121,6 +121,11 @@ class Game:  # +
 
             elif event.type == self.global_event:  # +
                 self.global_trigger = True  # +
+
+            elif event.type == pg.KEYDOWN and event.key in (pg.K_w, pg.K_a, pg.K_s, pg.K_d):
+                self.player.is_walking = True
+            elif event.type == pg.KEYUP and event.key in (pg.K_w, pg.K_a, pg.K_s, pg.K_d):
+                self.player.is_walking = False
             self.player.single_fire_event(event)  # +
 
     def run(self):  # +

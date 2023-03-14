@@ -2,11 +2,9 @@ import time
 
 import pygame as pg  # +
 import math  # +
-import numpy as np
 from game_settings import *  # +
 from network_game import Client, ServerPlayerDataStruct, HelloMsg, ClientPlayerDataStruct
 from sprite_object import AnimatedSprite
-import json
 import pickle
 
 
@@ -32,6 +30,7 @@ class Player:
 
         self.angle_diff = 0
         self.sin, self.cos = 0, 0
+        self.is_walking = False
 
         tries = 0  # hardcode
         if self.game.HOST or self.game.network_game:
@@ -90,6 +89,9 @@ class Player:
                 self.game.sound.shotgun.play()
                 self.shot = True
                 self.game.weapon.reloading = True
+
+    def movement_event(self, event):
+        pass
 
     def movement(self):  # +
         sin_a = math.sin(self.angle)  # +
@@ -156,16 +158,18 @@ class Player:
         for pid, instance in data.items():
             if pid not in self.players:
                 player_struct = self.parse_data(data[pid])
-                x, y, angle, sin, cos = player_struct
+                x, y, angle, sin, cos, walk = player_struct
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
                 self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
+                self.players[pid].set_other_params(walk)
                 self.players[pid].update()
 
     def send_data(self):
         self.player_data.set_player_id(self.client.client_id)
-        self.player_data.set_params((self.x, self.y), self.angle, (self.sin, self.cos), self.health)
+        self.player_data.set_params((self.x, self.y), self.angle,
+                                    (self.sin, self.cos), self.health)
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
@@ -184,12 +188,13 @@ class Player:
             if data.keys() == self.players.keys():
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
-                    x, y, angle, sin, cos = player_struct
+                    x, y, angle, sin, cos, walk = player_struct
                     self.players[pid].move(x, y)
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
                     self.players[pid].show_theta()
                     self.players[pid].player_direction((self.sin, self.cos), (sin, cos))
+                    self.players[pid].set_other_params(walk)
                     self.players[pid].update()
             else:
                 self.update_player_instances(data)
@@ -199,8 +204,8 @@ class Player:
         return float(x), float(y), float(angle)
 
     def parse_data(self, obj_data: ServerPlayerDataStruct) -> tuple:
-        x, y, angle, health, sin, cos = obj_data.get_params()
-        return float(x), float(y), float(angle), float(sin), float(cos)
+        x, y, angle, health, sin, cos, walk = obj_data.get_player_data()
+        return float(x), float(y), float(angle), float(sin), float(cos), bool(walk)
 
     def update(self):  # +
         self.movement()
@@ -246,6 +251,7 @@ class PlayerModel(AnimatedSprite):
         self.sin, self.cos = 0, 0
         self.model_dir = EAST
         self.player_dir = EAST
+        self.is_walking = False
         """
         0 - front
         1 - left_front
@@ -288,7 +294,6 @@ class PlayerModel(AnimatedSprite):
         p_sin, p_cos = player_polar
         m_sin, m_cos = model_polar
 
-        # model_direction
         self.model_dir = self.get_direction(m_sin, m_cos, self.model_angle_standard)
         self.player_dir = self.get_direction(p_sin, p_cos, self.player_angle_standard)
 
@@ -380,16 +385,14 @@ class PlayerModel(AnimatedSprite):
 
     def rotation_image(self, player_polar, model_polar):
         angle_degrees = math.degrees(self.player_theta)
-        p_sin, p_cos = player_polar
-        m_sin, m_cos = model_polar
 
         self.directions(player_polar, model_polar)
         left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
         right_border = H_PI_DEG + PLAYER_MODEL_CONSTANT
-        print(f'angle: ({angle_degrees} degrees); '
-              f'player_dir: {self.dirs[self.player_dir]}; '
-              f'model_dir: {self.dirs[self.model_dir]}; '
-              f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
+        # print(f'angle: ({angle_degrees} degrees); '
+        #       f'player_dir: {self.dirs[self.player_dir]}; '
+        #       f'model_dir: {self.dirs[self.model_dir]}; '
+        #       f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
 
         if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
             return self.player_view[0]
@@ -409,12 +412,6 @@ class PlayerModel(AnimatedSprite):
             return self.player_view[3]
         else:
             return self.player_view[0]
-
-        # elif PLAYER_MODEL_CONSTANT < abs(angle_degrees) <= left_border and not self.is_complanar() and not self.is_perpend():
-        #     if self.is_right():
-        #         return self.player_view[7]
-        #     return self.player_view[1]
-
 
     def get_image(self, path):
         img = pg.image.load(path).convert_alpha()
@@ -456,9 +453,18 @@ class PlayerModel(AnimatedSprite):
         self.image = self.rotation_image(player_polar, model_polar)
 
     def show_theta(self):
-        print(self.player_theta, f'{math.degrees(self.player_theta)} degrees')
+        """test function"""
+        print(self.player_theta, f'{math.degrees(self.player_theta)} degrees ')
+
+    def show_walk(self):
+        """test function"""
+        print(f'is walking {self.is_walking}')
+
+    def set_other_params(self, walk):
+        self.is_walking = walk
 
     def update(self):
         self.check_animation_time()
         self.get_sprite()
+        self.show_walk()
         #self.animate(self.idle_images)
