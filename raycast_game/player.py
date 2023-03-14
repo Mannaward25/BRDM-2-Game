@@ -483,7 +483,10 @@ class PlayerModel(AnimatedSprite):
 
     def walking(self):
         """includes self.animate_walk()"""
-        self.animate(self.walk_images)
+        if not self.is_complanar() and not self.is_perpend():
+            self.animate(self.walk_images)
+        else:
+            self.image = self.player_view[4]
 
     def check_hit(self):
         pass
