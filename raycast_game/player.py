@@ -380,7 +380,7 @@ class PlayerModel(AnimatedSprite):
             return self.player_view[0]
         elif angle_degrees < PLAYER_MODEL_CONSTANT and self.is_complanar() and not self.is_perpend():
             return self.player_view[4]
-        elif left_border < angle_degrees < PLAYER_MODEL_CONSTANT and self.is_perpend():
+        elif left_border < angle_degrees <= H_PI_DEG and self.is_perpend():
             if self.is_right():
                 return self.player_view[6]
             return self.player_view[2]
