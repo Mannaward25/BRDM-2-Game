@@ -169,7 +169,8 @@ class Player:
     def send_data(self):
         self.player_data.set_player_id(self.client.client_id)
         self.player_data.set_params((self.x, self.y), self.angle,
-                                    (self.sin, self.cos), self.health)
+                                    (self.sin, self.cos),
+                                    self.is_walking, self.health)
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
