@@ -249,6 +249,9 @@ class PlayerDataStruct:
         self.shot = False
         self.damage = 0
 
+        # ray_cast info
+        self.ray_cast_visible = False
+
     def set_params(self, pos: tuple, angle, polars=(0, 0), walk=False, health=0):
         self.x, self.y = pos
         self.angle = angle
@@ -274,6 +277,9 @@ class PlayerDataStruct:
 
     def get_player_data(self):
         return self.x, self.y, self.angle, self.health, self.sin, self.cos, self.is_walking
+
+    def set_ray_cast_result(self, ray_cast: bool):
+        self.ray_cast_visible = ray_cast
 
     def set_pos(self, x, y):
         self.x, self.y = x, y

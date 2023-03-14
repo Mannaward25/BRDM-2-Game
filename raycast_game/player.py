@@ -154,6 +154,13 @@ class Player:
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
 
+    def eye_contact_check(self, pid):
+        FIXME = False
+        if self.ray_cast_visible[pid] and FIXME:
+            self.eye_contact[pid] = True
+        else:
+            self.eye_contact[pid] = False
+
     def delete_player_instance(self, data: dict):
         if len(data) < len(self.players):  # deletes quited players
             pid_to_delete = None
@@ -163,6 +170,8 @@ class Player:
 
             print(f'player id {pid_to_delete} quit the server')
             del self.players[pid_to_delete]
+            del self.ray_cast_visible[pid_to_delete]
+            del self.eye_contact[pid_to_delete]
 
     def update_player_instances(self, data: dict):
         self.delete_player_instance(data)
@@ -172,6 +181,7 @@ class Player:
                 player_struct = self.parse_data(data[pid])
                 x, y, angle, sin, cos, walk = player_struct
                 self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
+                self.eye_contact_check(pid)
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
@@ -206,6 +216,7 @@ class Player:
                     player_struct = self.parse_data(data[pid])
                     x, y, angle, sin, cos, walk = player_struct
                     self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
+                    self.eye_contact_check(pid)
                     self.players[pid].move(x, y)
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
