@@ -29,6 +29,7 @@ class Player:
         self.players = {}
 
         self.ray_cast_visible = {}  # {pid: bool(value)}
+        self.hit = {}  # {pid: bool(value)}
         self.eye_contact = {}  # {pid: bool(value)}
         self.alive = True
 
@@ -48,8 +49,8 @@ class Player:
 
     def try_connect(self):
         msg: bytes = self.client.connect()
-        msg: HelloMsg = pickle.loads(msg)
         if msg:
+            msg: HelloMsg = pickle.loads(msg)
             num = msg.pid
             self.client.set_client_id(num)
             print(msg, f'from Client_id {num} .__init__')
@@ -75,11 +76,23 @@ class Player:
             self.game.new_game()
 
     def check_game_over(self):
-        if self.health < 1:
+        if self.health < 1 and not self.game.network_game:
             self.game.object_renderer.game_over()
             pg.display.flip()
             pg.time.delay(1500)
             self.game.new_game()
+        elif self.health < 1 and self.game.network_game:
+            self.game.object_renderer.game_over()
+            pg.display.flip()
+            pg.time.delay(500)
+            self.alive = False
+            self.reset_player_params()
+
+    def reset_player_params(self):  # for network game
+        self.x, self.y = self.client.get_init_pos()
+        self.health = 100
+        self.angle = PLAYER_ANGLE
+        self.alive = True
 
     def get_damage(self, damage):
         self.health -= damage
@@ -165,7 +178,8 @@ class Player:
         # If we have ray_cast_visible dict with pid of the player which send info to us and it s switched to True
         # we switch eye_contact flag and send it to that player
         # finally we have rights to interact with model of other player and bring damage to him
-        self.player_data.set_shot_state(self.shot, self.game.weapon.damage)  # send damage info!
+        self.player_data.set_ray_cast_result(self.ray_cast_visible.copy())  # pack deep copy
+        self.player_data.set_shot_state(self.shot, self.game.weapon.damage, self.hit.copy())  # send damage info!
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
@@ -177,10 +191,11 @@ class Player:
         msg = pickle.loads(recv)
         return msg
 
-    def eye_contact_check(self, pid):
-        FIXME = False
-        if self.ray_cast_visible[pid] and FIXME:
+    def eye_contact_check(self, pid, other_ray_cast_val: dict):  # rc_val = {pid: bool(value)}
+
+        if self.ray_cast_visible[pid] and other_ray_cast_val.get(self.client.client_id, False):
             self.eye_contact[pid] = True
+            #print('eye contact with player', pid)
         else:
             self.eye_contact[pid] = False
 
@@ -195,6 +210,7 @@ class Player:
             del self.players[pid_to_delete]
             del self.ray_cast_visible[pid_to_delete]
             del self.eye_contact[pid_to_delete]
+            del self.hit[pid_to_delete]
 
     def update_player_instances(self, data: dict):
         self.delete_player_instance(data)  # check invalid player instances
@@ -202,9 +218,32 @@ class Player:
         for pid, instance in data.items():
             if pid not in self.players:
                 player_struct = self.parse_data(data[pid])
-                x, y, angle, sin, cos, walk = player_struct
+
+                x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit  = player_struct  # unpack hit value
+                # do we see other player?
                 self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
-                self.eye_contact_check(pid)
+                # does other player see us?
+                self.eye_contact_check(pid, rc_val)
+
+                # check if we hit other player
+                # if shot:
+                #     self.game.sound.shotgun.set_volume(self.players[pid].calc_shot_volume())
+                #     self.game.sound.shotgun.play()
+                #
+                # if self.eye_contact[pid] and self.shot and self.players[pid].check_hit():
+                #     self.hit[pid] = True
+                #     self.players[pid].make_pain()
+                #     print(self.hit, hit)
+                # else:
+                #     self.hit[pid] = False
+                # #print(hit)
+                # if hit.get(self.client.client_id, False):
+                #     print('i have damage')
+                #
+                # if self.eye_contact[pid] and shot and hit.get(self.client.client_id, False):
+                #     print('i have damage')
+                #     self.get_damage(dmg)
+
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
@@ -219,14 +258,41 @@ class Player:
             if data.keys() == self.players.keys():
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
-                    x, y, angle, sin, cos, walk = player_struct
+                    x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit = player_struct  # unpack hit value
+                    # do we see other player?
                     self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
-                    self.eye_contact_check(pid)
+                    # does other player see us?
+                    self.eye_contact_check(pid, rc_val)
+
                     self.players[pid].move(x, y)
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
-                    self.players[pid].show_theta()
+                    #self.players[pid].show_theta()
                     self.players[pid].set_other_params(walk)
+
+                    # check if we hit other player
+                    if hit.get(self.client.client_id, False):
+                        print('shot')
+                        shot = True
+
+                    if shot:
+                        self.game.sound.shotgun.set_volume(self.players[pid].calc_shot_volume())
+                        self.game.sound.shotgun.play()
+
+                    if self.eye_contact[pid] and self.shot and self.players[pid].check_hit():
+                        self.hit[pid] = True
+                        self.players[pid].make_pain()
+                        print(self.hit, shot)
+                    else:
+                        self.hit[pid] = False
+                    #print(hit, shot)
+                    # we got enemy killed and now we need to animate his death
+                    # we need to send self.alive parameter
+                    # we need to animate attack while shooting
+
+                    if self.eye_contact[pid] and shot and hit.get(self.client.client_id, False):
+                        print(f'i have  {self.health}hp and get damage = ', dmg)
+                        self.get_damage(dmg)
 
                     self.players[pid].update_model((self.sin, self.cos), (sin, cos))
             else:
@@ -243,8 +309,11 @@ class Player:
             x, y = obj_data.get_pos()
             return float(x), float(y)
         else:
-            x, y, angle, health, sin, cos, walk = obj_data.get_player_data()
-            return float(x), float(y), float(angle), float(sin), float(cos), bool(walk)
+            x, y, angle, hp, sin, cos, walk = obj_data.get_player_data()
+            shot, dmg, hit = obj_data.get_shot_state()
+            rc_val: dict = obj_data.get_ray_cast_result()
+            return (float(x), float(y), float(angle), float(sin), float(cos),
+                    bool(walk), bool(shot), int(dmg), rc_val, int(hp), hit)
 
     def player_to_player_ray_cast(self, other_pos) -> bool:
         # calc theta
@@ -293,7 +362,7 @@ class Player:
         x_vert, dx = (x_map + 1, 1) if cos_a > 0 else (x_map - 1e-6, -1)
 
         depth_vert = (x_vert - ox) / cos_a
-        y_vert = oy + depth_vert * sin_a  # timecode 11:00
+        y_vert = oy + depth_vert * sin_a
 
         delta_depth = dx / cos_a
         dy = delta_depth * sin_a
@@ -342,7 +411,7 @@ class Player:
 class PlayerModel(AnimatedSprite):
 
     def __init__(self, game, player_id, path='resources/sprites/npc/soldier/0.png',
-                 pos=(2.5, 6.5), scale=0.6, shift=0.38, animation_time=180):
+                 pos=(2.5, 6.5), scale=0.6, shift=0.38, animation_time=360):
         super().__init__(game, path, pos, scale, shift, animation_time)
         self.player_id = player_id
         self.attack_images = self.get_images(self.path + '/attack')
@@ -363,6 +432,8 @@ class PlayerModel(AnimatedSprite):
         self.sin, self.cos = 0, 0
         self.model_dir = EAST
         self.player_dir = EAST
+        self.pos_diff_x = 0
+        self.pos_diff_y = 0
 
         # state flags
         self.is_walking = False
@@ -370,6 +441,7 @@ class PlayerModel(AnimatedSprite):
         self.pain = False
         self.is_attacking = False
         self.ray_cast_visible = False
+
 
         """
         0 - front
@@ -543,6 +615,7 @@ class PlayerModel(AnimatedSprite):
         self.model_angle_standard = self.standardize_angle(model_angle)
         diff1 = abs(player_angle - model_angle)
         diff2 = abs(diff1 - math.tau)
+
         min_diff = min(diff1, diff2)
         self.angle_difference = min_diff
 
@@ -564,6 +637,7 @@ class PlayerModel(AnimatedSprite):
         px, py = player_pos
         mx, my = model_pos
         diff_x, diff_y = abs(px - mx), abs(py - my)
+        self.pos_diff_x, self.pos_diff_y = diff_x, diff_y
 
         player_theta_tmp = math.atan2(diff_y, diff_x)
         player_theta = abs(player_theta_tmp - self.model_angle)
@@ -584,11 +658,14 @@ class PlayerModel(AnimatedSprite):
     def set_other_params(self, walk):
         self.is_walking = walk
 
-    def animate_pain(self):
-        pass
-
     def animate_death(self):
         pass
+
+    def animate_pain(self):
+        self.check_animation_time()
+        self.animate(self.pain_images)
+        if self.animation_trigger:
+            self.pain = False
 
     def walking(self):
         """includes self.animate_walk()"""
@@ -602,18 +679,26 @@ class PlayerModel(AnimatedSprite):
         else:
             self.image = self.player_view[4]
 
-    def check_hit(self):
-        pass
+    def check_hit(self) -> bool:
+        if HALF_WIDTH - self.sprite_half_width < self.screen_x < HALF_WIDTH + self.sprite_half_width:
+            return True
+        return False
+
+    def make_pain(self):
+        self.game.sound.npc_pain.play()
+        self.pain = True
+
+    def calc_shot_volume(self) -> float:  # 0 to 1
+        vol = math.hypot(self.pos_diff_x, self.pos_diff_y)
+        return vol
 
     def update_model(self, player_polar, model_polar):
-        if self.alive:
 
-            self.check_hit()
+        if self.alive:
 
             if self.pain:
                 self.animate_pain()
-
-            if self.is_walking:
+            elif self.is_walking:
                 self.walking()
             else:
                 self.idle_moves(player_polar, model_polar)
@@ -622,5 +707,5 @@ class PlayerModel(AnimatedSprite):
 
         self.check_animation_time()
         self.get_sprite()
-        self.show_walk()
+        #self.show_walk()
         #self.animate(self.idle_images)

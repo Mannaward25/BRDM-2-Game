@@ -7,7 +7,7 @@ PLAYER_SIZE_SCALE = 80
 
 #  window settings
 RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)  # +
-FPS = 60  # +
+FPS = 120  # +
 
 #  game settings
 PLAYER_POS = 1.5, 2.8  # +
@@ -95,6 +95,7 @@ LOCAL_SERVER_IP = '192.168.1.110'  # 192.168.1.110, 192.168.1.129
 PLAYER_MODEL_CONSTANT = 22.5  # degrees
 HALF_PI = math.pi / 2
 H_PI_DEG = math.degrees(HALF_PI)
+
 
 # directions
 EAST = (1, 0)

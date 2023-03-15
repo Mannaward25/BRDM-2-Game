@@ -20,7 +20,7 @@ class Sound:
         #
 
     @staticmethod
-    def volume(self, vol=1.0):
+    def volume(vol=1.0):
         pg.mixer.music.set_volume(vol)
 
 

@@ -79,37 +79,22 @@ class DedicatedServer:
         print(f'deleted player with id {pid}')
         return pid
 
-    # def test_prep_data(self, data: str) -> tuple:  # will be replaced
-    #     """test function to cook raw data from string to tuple
-    #         format: float(x), float(y), float(angle), int(id)
-    #     """
-    #     data = data.split(',')
-    #     if len(data) == 4:  # check if struct has 4 variables
-    #         x, y, angle, player_id = data
-    #
-    #         return float(x), float(y), float(angle), str(player_id)
-    #     else:
-    #         print('no data prepared!')
-
     def new_prep_data(self, data: 'ClientPlayerDataStruct') -> tuple:
         if data:
             x, y, angle, health, sin, cos, walk = data.get_player_data()
+            shot_state, damage, hit = data.get_shot_state()
+            raycast_val: dict = data.get_ray_cast_result()
             player_id = data.get_player_id()
-            return float(x), float(y), float(angle), float(sin), float(cos), bool(walk), str(player_id)
+            return (float(x), float(y), float(angle), float(sin), float(cos), bool(walk), raycast_val,
+                    bool(shot_state), int(damage), int(health), hit,
+                    str(player_id))
         return tuple()
 
     def update_player_data(self, player_struct: tuple, pid: str):
-        x_pos, y_pos, angle, sin, cos, walk, _ = player_struct
-        self.server_players[pid].set_params(pos=(x_pos, y_pos), angle=angle, polars=(sin, cos), walk=walk)
-
-    # def get_player_data(self, pid: str):
-    #     all_data = {}
-    #
-    #     for player_id, player_instance in self.server_players.items():
-    #         if pid != player_instance.get_player_id():
-    #             other_player_id, data = player_instance.get_all_data()
-    #             all_data[other_player_id] = data
-    #     return all_data
+        x_pos, y_pos, angle, sin, cos, walk, rc_val, shot, dmg, hp, hit, _ = player_struct
+        self.server_players[pid].set_params(pos=(x_pos, y_pos), angle=angle, polars=(sin, cos), walk=walk, health=hp)
+        self.server_players[pid].set_shot_state(shot, dmg, hit.copy())
+        self.server_players[pid].set_ray_cast_result(rc_val.copy())
 
     def new_get_player_data(self, pid: str):
         all_data = {}
@@ -136,11 +121,11 @@ class DedicatedServer:
                     print("Disconnected")
                     break
                 else:
-                    #reply = data.decode('utf-8')  # <--- get data from clients if we use string data transfer
                     reply: ClientPlayerDataStruct = pickle.loads(data)
                     print(f"Received: {reply}\n")
-                    # player_struct = self.test_prep_data(reply)  # if we use string data transfer
-                    player_struct = self.new_prep_data(reply)  # if we use pickle class data transfer
+
+                    # pack data into tuple if we use pickle class data transfer
+                    player_struct = self.new_prep_data(reply)
 
                     if player_struct:
                         self.update_player_data(player_struct, pid)  # <---- update data of the player which send info
@@ -152,7 +137,8 @@ class DedicatedServer:
                     all_data = self.new_get_player_data(pid)
                     print(f"Sending {all_data}\n")
 
-                    reply: bytes = pickle.dumps(all_data, protocol=pickle.HIGHEST_PROTOCOL)  # json.dumps(all_data) if we use json structs
+                    # pickle.dumps(all_data) if we use pickle structs
+                    reply: bytes = pickle.dumps(all_data, protocol=pickle.HIGHEST_PROTOCOL)
 
                 conn.sendall(reply)  # reply.encode() if we use json
                 print(f'self.clients = {self.clients}')
@@ -162,7 +148,6 @@ class DedicatedServer:
 
         print("Lost connection\n")
         self.delete_player_from_server(pid)
-        #self.conn.close()
         self.clients -= 1
 
     def run(self):
@@ -248,9 +233,10 @@ class PlayerDataStruct:
         # shot state
         self.shot = False
         self.damage = 0
+        self.hit = {}
 
         # ray_cast info
-        self.ray_cast_visible = False
+        self.ray_cast_visible = {}
 
     def set_params(self, pos: tuple, angle, polars=(0, 0), walk=False, health=0):
         self.x, self.y = pos
@@ -259,12 +245,13 @@ class PlayerDataStruct:
         self.sin, self.cos = polars
         self.is_walking = walk
 
-    def set_shot_state(self, shot: bool, damage: int):
-        self.shot = shot
+    def set_shot_state(self, shot: bool, damage: int, hit: dict):
         self.damage = damage
+        self.shot = shot
+        self.hit = hit
 
     def get_shot_state(self):
-        return self.shot, self.damage
+        return self.shot, self.damage, self.hit.copy()
 
     def get_params(self):
         return self.x, self.y, self.angle, self.health, self.sin, self.cos
@@ -278,8 +265,11 @@ class PlayerDataStruct:
     def get_player_data(self):
         return self.x, self.y, self.angle, self.health, self.sin, self.cos, self.is_walking
 
-    def set_ray_cast_result(self, ray_cast: bool):
+    def set_ray_cast_result(self, ray_cast: dict):
         self.ray_cast_visible = ray_cast
+
+    def get_ray_cast_result(self):
+        return self.ray_cast_visible.copy()
 
     def set_pos(self, x, y):
         self.x, self.y = x, y
