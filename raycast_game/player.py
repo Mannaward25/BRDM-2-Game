@@ -154,6 +154,29 @@ class Player:
         self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
         self.angle += self.rel * MOUSE_SENSITIVITY
 
+    def send_data(self):
+        self.player_data.set_player_id(self.client.client_id)
+        self.player_data.set_params((self.x, self.y), self.angle,
+                                    (self.sin, self.cos),
+                                    self.is_walking, self.health)
+        # here should be actions of sending to other players info about ray cast visibility
+        # we get data from other players. If we see that player has ray cast visibility info with our pid we check it
+        # if pid == self.client.client_id
+        # If we have ray_cast_visible dict with pid of the player which send info to us and it s switched to True
+        # we switch eye_contact flag and send it to that player
+        # finally we have rights to interact with model of other player and bring damage to him
+        self.player_data.set_shot_state(self.shot, self.game.weapon.damage)  # send damage info!
+
+        #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
+        self.client.send_data(pickle.dumps(self.player_data))  # READY
+
+    def recv_data(self) -> dict:
+        recv: bytes = self.client.client.recv(DATA_RECV_CHUNK)
+        #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
+        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
+        msg = pickle.loads(recv)
+        return msg
+
     def eye_contact_check(self, pid):
         FIXME = False
         if self.ray_cast_visible[pid] and FIXME:
@@ -174,7 +197,7 @@ class Player:
             del self.eye_contact[pid_to_delete]
 
     def update_player_instances(self, data: dict):
-        self.delete_player_instance(data)
+        self.delete_player_instance(data)  # check invalid player instances
 
         for pid, instance in data.items():
             if pid not in self.players:
@@ -188,24 +211,6 @@ class Player:
                 self.players[pid].set_other_params(walk)
 
                 self.players[pid].update_model((self.sin, self.cos), (sin, cos))
-
-    def send_data(self):
-        self.player_data.set_player_id(self.client.client_id)
-        self.player_data.set_params((self.x, self.y), self.angle,
-                                    (self.sin, self.cos),
-                                    self.is_walking, self.health)
-
-        self.player_data.set_shot_state(self.shot, self.game.weapon.damage)  # send damage info!
-
-        #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
-        self.client.send_data(pickle.dumps(self.player_data))  # READY
-
-    def recv_data(self) -> dict:
-        recv: bytes = self.client.client.recv(DATA_RECV_CHUNK)
-        #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
-        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
-        msg = pickle.loads(recv)
-        return msg
 
     def update_server_info(self, data: dict):
         self.number_of_players = len(data) + 1
@@ -227,7 +232,7 @@ class Player:
             else:
                 self.update_player_instances(data)
         else:
-            self.delete_player_instance(data)
+            self.delete_player_instance(data)  # check invalid player instances
 
     def test_parse_data(self, string_data: str) -> tuple:
         x, y, angle = string_data.split(',')
