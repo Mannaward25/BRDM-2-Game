@@ -182,7 +182,8 @@ class Client:
         self.client_pos = {
             '0': PLAYER_POS,
             '1': PLAYER_POS,
-            '2': (2.5, 6.5)
+            '2': (2.5, 6.5),
+            '3': (12.1, 2.1)
         }
 
     def connect(self) -> bytes:
