@@ -691,8 +691,10 @@ class PlayerModel(AnimatedSprite):
                 self.image = self.player_view[6]
             else:
                 self.image = self.player_view[2]
+            self.attack_animation_trigger = False
         else:
             self.image = self.player_view[4]
+            self.attack_animation_trigger = False
 
     def animate_death(self):
         if not self.alive:
@@ -764,9 +766,8 @@ class PlayerModel(AnimatedSprite):
                 if self.is_attacking:
                     self.attack_animation_trigger = self.is_attacking
                 self.animate_attack()
-            elif not self.walking():
+            else:
                 self.idle_moves(player_polar, model_polar)
-                self.get_sprite()
         else:
             self.animate_death()
 
