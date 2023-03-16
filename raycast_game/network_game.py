@@ -124,7 +124,7 @@ class DedicatedServer:
                     break
                 else:
                     reply: ClientPlayerDataStruct = pickle.loads(data)
-                    print(f"Received: {reply}\n")
+                    #print(f"Received: {reply}\n")
 
                     # pack data into tuple if we use pickle class data transfer
                     player_struct = self.new_prep_data(reply)
@@ -137,13 +137,13 @@ class DedicatedServer:
                         break
 
                     all_data = self.new_get_player_data(pid)
-                    print(f"Sending {all_data}\n")
+                    #print(f"Sending {all_data}\n")
 
                     # pickle.dumps(all_data) if we use pickle structs
                     reply: bytes = pickle.dumps(all_data, protocol=pickle.HIGHEST_PROTOCOL)
 
                 conn.sendall(reply)  # reply.encode() if we use json
-                print(f'self.clients = {self.clients}')
+                #print(f'self.clients = {self.clients}')
             except Exception as err:
                 print('Server Exception arose ', err)
                 break
@@ -158,7 +158,7 @@ class DedicatedServer:
             self.conn, self.address = self.sock.accept()
             self.clients += 1
             pid = self.assign_player_id(self.conn)
-            print('ok')
+            #print('ok')
             thread_id = _thread.start_new_thread(self.threaded_client, (self.conn, pid))
             print(f"connected to {self.address}")
 

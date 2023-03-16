@@ -296,7 +296,7 @@ class Player:
                     # we need to send self.alive parameter
                     # we need to animate attack while shooting
 
-                    if self.eye_contact[pid] and shot and hit.get(self.client.client_id, False):
+                    if self.eye_contact[pid] and hit.get(self.client.client_id, False):
                         print(f'i have  {self.health}hp and get damage = ', dmg)
                         self.get_damage(dmg)
 
