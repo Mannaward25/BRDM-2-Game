@@ -1,11 +1,10 @@
-import time
-
 import pygame as pg  # +
 import math  # +
 from game_settings import *  # +
 from network_game import Client, ServerPlayerDataStruct, HelloMsg, ClientPlayerDataStruct
 from sprite_object import AnimatedSprite
 import pickle
+import time
 
 
 class Player:
@@ -32,7 +31,6 @@ class Player:
         self.hit = {}  # {pid: bool(value)}
         self.eye_contact = {}  # {pid: bool(value)}
         self.alive = True
-        self.other_pain = False
 
         self.angle_diff = 0
         self.sin, self.cos = 0, 0
@@ -42,7 +40,7 @@ class Player:
         if self.game.HOST or self.game.network_game:
             while not self.try_connect() and tries < 3:
                 print("unsuccessful connection retrial in 3 sec")
-                time.sleep(4)
+                time.sleep(3)
                 tries += 1
 
         if self.game.network_game:
@@ -87,7 +85,6 @@ class Player:
             pg.display.flip()
             pg.time.delay(400)
             self.alive = False
-            #self.reset_player_params()
 
     def reset_player_params(self):  # for network game
         pg.time.delay(400)
@@ -174,31 +171,21 @@ class Player:
         self.player_data.set_params((self.x, self.y), self.angle,
                                     (self.sin, self.cos),
                                     self.is_walking, self.health)
-        # here should be actions of sending to other players info about ray cast visibility
-        # we get data from other players. If we see that player has ray cast visibility info with our pid we check it
-        # if pid == self.client.client_id
-        # If we have ray_cast_visible dict with pid of the player which send info to us and it s switched to True
-        # we switch eye_contact flag and send it to that player
-        # finally we have rights to interact with model of other player and bring damage to him
+
         self.player_data.set_ray_cast_result(self.ray_cast_visible.copy())  # pack deep copy
         self.player_data.set_shot_state(self.shot, self.game.weapon.damage, self.hit.copy())  # send damage info!
         self.player_data.set_alive_status(self.alive)
 
-        #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
-        self.client.send_data(pickle.dumps(self.player_data))  # READY
+        self.client.send_data(pickle.dumps(self.player_data))
 
     def recv_data(self) -> dict:
         recv: bytes = self.client.client.recv(DATA_RECV_CHUNK)
-        #print(recv.decode('utf-8'), len(recv.decode('utf-8')))
-        #msg: dict = json.loads(recv.decode('utf-8'))  # deserialized json data
         msg = pickle.loads(recv)
         return msg
 
     def eye_contact_check(self, pid, other_ray_cast_val: dict):  # rc_val = {pid: bool(value)}
-
         if self.ray_cast_visible[pid] and other_ray_cast_val.get(self.client.client_id, False):
             self.eye_contact[pid] = True
-            #print('eye contact with player', pid)
         else:
             self.eye_contact[pid] = False
 
@@ -228,25 +215,6 @@ class Player:
                 # does other player see us?
                 self.eye_contact_check(pid, rc_val)
 
-                # check if we hit other player
-                # if shot:
-                #     self.game.sound.shotgun.set_volume(self.players[pid].calc_shot_volume())
-                #     self.game.sound.shotgun.play()
-                #
-                # if self.eye_contact[pid] and self.shot and self.players[pid].check_hit():
-                #     self.hit[pid] = True
-                #     self.players[pid].make_pain()
-                #     print(self.hit, hit)
-                # else:
-                #     self.hit[pid] = False
-                # #print(hit)
-                # if hit.get(self.client.client_id, False):
-                #     print('i have damage')
-                #
-                # if self.eye_contact[pid] and shot and hit.get(self.client.client_id, False):
-                #     print('i have damage')
-                #     self.get_damage(dmg)
-
                 self.players[pid] = PlayerModel(self.game, pid, pos=(x, y))
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
@@ -270,7 +238,6 @@ class Player:
                     self.players[pid].move(x, y)
                     self.players[pid].set_angle_diff(self.angle, angle)
                     self.players[pid].position_diff((self.x, self.y), (x, y))
-                    #self.players[pid].show_theta()
                     self.players[pid].set_other_params(walk)
 
                     # check if we hit other player
@@ -286,15 +253,10 @@ class Player:
 
                     if self.eye_contact[pid] and self.shot and self.players[pid].check_hit():
                         self.hit[pid] = True
-                        self.other_pain = True
                         self.players[pid].make_pain()
                         print(self.hit, shot)
                     else:
                         self.hit[pid] = False
-
-                    # we got enemy killed and now we need to animate his death
-                    # we need to send self.alive parameter
-                    # we need to animate attack while shooting
 
                     if self.eye_contact[pid] and hit.get(self.client.client_id, False):
                         print(f'i have  {self.health}hp and get damage = ', dmg)
@@ -405,10 +367,6 @@ class Player:
             self.send_data()
             data = self.recv_data()
 
-            if self.other_pain:
-                self.other_pain = False
-
-
             if not self.alive:
                 self.reset_player_params()
 
@@ -416,7 +374,6 @@ class Player:
 
         if not self.game.object_handler.no_npc:
             self.check_game_win()
-
 
     @property  # +
     def pos(self):
@@ -669,10 +626,6 @@ class PlayerModel(AnimatedSprite):
     def idle_moves(self, player_polar, model_polar):  # player_polar(sin, cos), model_polar(sin, cos)
         self.image = self.rotation_image(player_polar, model_polar)
 
-    def show_theta(self):
-        """test function"""
-        print(self.player_theta, f'{math.degrees(self.player_theta)} degrees ')
-
     def show_walk(self):
         """test function"""
         print(f'is walking {self.is_walking}')
@@ -775,4 +728,3 @@ class PlayerModel(AnimatedSprite):
         self.check_animation_time()
         self.get_sprite()
         self.reset_frame_counter()
-
