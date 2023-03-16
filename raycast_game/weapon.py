@@ -13,7 +13,7 @@ class Weapon(AnimatedSprite):
         self.reloading = False
         self.num_images = len(self.images)
         self.frame_counter = 0
-        self.damage = 50
+        self.damage = 25
 
     def animate_shot(self):
         if self.reloading:
