@@ -744,7 +744,7 @@ class PlayerModel(AnimatedSprite):
         self.pain = True
 
     def calc_shot_volume(self) -> float:  # 0 to 1
-        vol = math.hypot(self.pos_diff_x, self.pos_diff_y)
+        vol = 1 / math.hypot(self.pos_diff_x, self.pos_diff_y)
         return vol
 
     def set_alive_status(self, alive: bool):
