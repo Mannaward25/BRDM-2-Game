@@ -551,7 +551,6 @@ class PlayerModel(AnimatedSprite):
             return True
         elif (px, py) == NE and ((mx, my) == EAST or (mx, my) == SOUTH):
             return True
-
         return False
 
     def rotation_image(self, player_polar, model_polar):
@@ -559,10 +558,6 @@ class PlayerModel(AnimatedSprite):
 
         self.directions(player_polar, model_polar)
         left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
-        # print(f'angle: ({angle_degrees} degrees); '
-        #       f'player_dir: {self.dirs[self.player_dir]}; '
-        #       f'model_dir: {self.dirs[self.model_dir]}; '
-        #       f'is_complanar: {self.is_complanar()}, is_perpend: {self.is_perpend()}, is_right: {self.is_right()}')
 
         if angle_degrees < PLAYER_MODEL_CONSTANT and not self.is_complanar() and not self.is_perpend():
             return self.player_view[0]

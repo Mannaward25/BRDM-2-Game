@@ -14,14 +14,6 @@ from network_game import DedicatedServer, Client
 import subprocess
 import time
 
-# npc movement algorithm (npc.py)
-# npc ray cast algorithm (npc.py)
-# npc path finding algorithm (pathfinding.py)
-# npc run_logic review (npc.py)
-# global trigger sense (main.py)
-# breadth first search algorithm (in pathfinding.py)
-# player interactions (get_damage, digits object_render.py)
-
 
 class Game:  # +
 
@@ -58,34 +50,23 @@ class Game:  # +
         self.client = Client(self)
         self.map = Map(self)  # +
         self.player = Player(self)  # +
-
         #self.doom_fire = DoomFire(self)
         self.object_renderer = ObjectRenderer(self)  # +
         #self.mode7 = Mode7(self)
         self.raycasting = RayCasting(self)  # +
 
-        # self.static_sprite = SpriteObject(self) # old way of rendering sprite objects
-        # self.animated_sprite = AnimatedSprite(self)
-
         # new way of rendering sprite objects
         self.object_handler = ObjectHandler(self, no_npc=True)
         self.weapon = Weapon(self)
         self.sound = Sound(self, no_sound=True)
-
         self.pathfinding = PathFinding(self)
-
         self.mode_seven = FakeModeSeven(self)
-        # pg.mixer.music.load(self.sound.path + f'theme{randint(1, 3)}.mp3')  #  uncomment to play
-        # pg.mixer.music.play()
-        #self.server = Server(self)
-
 
     def update(self):  # +
         #self.mode7.update()  # working
         self.raycasting.update()  # working
         self.player.update()
-        # self.static_sprite.update()
-        # self.animated_sprite.update()
+
         self.object_handler.update()  # working
         self.weapon.update()  # working
         #self.doom_fire.update()  # working
@@ -101,10 +82,8 @@ class Game:  # +
         self.object_renderer.draw()
         self.weapon.draw()
         #self.doom_fire.draw()
-
         #self.map.draw()  # working
         #self.player.draw()
-        #self.mode_seven.draw()
 
     def check_events(self):  # +
         self.global_trigger = False  # +
