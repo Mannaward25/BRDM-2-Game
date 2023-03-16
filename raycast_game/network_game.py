@@ -84,17 +84,19 @@ class DedicatedServer:
             x, y, angle, health, sin, cos, walk = data.get_player_data()
             shot_state, damage, hit = data.get_shot_state()
             raycast_val: dict = data.get_ray_cast_result()
+            alive = data.get_alive_status()
             player_id = data.get_player_id()
             return (float(x), float(y), float(angle), float(sin), float(cos), bool(walk), raycast_val,
-                    bool(shot_state), int(damage), int(health), hit,
+                    bool(shot_state), int(damage), int(health), hit, bool(alive),
                     str(player_id))
         return tuple()
 
     def update_player_data(self, player_struct: tuple, pid: str):
-        x_pos, y_pos, angle, sin, cos, walk, rc_val, shot, dmg, hp, hit, _ = player_struct
+        x_pos, y_pos, angle, sin, cos, walk, rc_val, shot, dmg, hp, hit, alive, _ = player_struct
         self.server_players[pid].set_params(pos=(x_pos, y_pos), angle=angle, polars=(sin, cos), walk=walk, health=hp)
         self.server_players[pid].set_shot_state(shot, dmg, hit.copy())
         self.server_players[pid].set_ray_cast_result(rc_val.copy())
+        self.server_players[pid].set_alive_status(alive)
 
     def new_get_player_data(self, pid: str):
         all_data = {}
@@ -229,6 +231,7 @@ class PlayerDataStruct:
         self.health = health
         self.sin, self.cos = 0, 0
         self.is_walking = walk
+        self.alive = True
 
         # shot state
         self.shot = False
@@ -249,6 +252,12 @@ class PlayerDataStruct:
         self.damage = damage
         self.shot = shot
         self.hit = hit
+
+    def set_alive_status(self, alive: bool):
+        self.alive = alive
+
+    def get_alive_status(self):
+        return self.alive
 
     def get_shot_state(self):
         return self.shot, self.damage, self.hit.copy()

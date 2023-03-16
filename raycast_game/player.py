@@ -32,6 +32,7 @@ class Player:
         self.hit = {}  # {pid: bool(value)}
         self.eye_contact = {}  # {pid: bool(value)}
         self.alive = True
+        self.other_pain = False
 
         self.angle_diff = 0
         self.sin, self.cos = 0, 0
@@ -84,11 +85,12 @@ class Player:
         elif self.health < 1 and self.game.network_game:
             self.game.object_renderer.game_over()
             pg.display.flip()
-            pg.time.delay(500)
+            pg.time.delay(400)
             self.alive = False
-            self.reset_player_params()
+            #self.reset_player_params()
 
     def reset_player_params(self):  # for network game
+        pg.time.delay(400)
         self.x, self.y = self.client.get_init_pos()
         self.health = 100
         self.angle = PLAYER_ANGLE
@@ -180,6 +182,7 @@ class Player:
         # finally we have rights to interact with model of other player and bring damage to him
         self.player_data.set_ray_cast_result(self.ray_cast_visible.copy())  # pack deep copy
         self.player_data.set_shot_state(self.shot, self.game.weapon.damage, self.hit.copy())  # send damage info!
+        self.player_data.set_alive_status(self.alive)
 
         #self.client.send_data(f'{self.x},{self.y},{self.angle},{self.client.client_id}'.encode())  # send my position
         self.client.send_data(pickle.dumps(self.player_data))  # READY
@@ -219,7 +222,7 @@ class Player:
             if pid not in self.players:
                 player_struct = self.parse_data(data[pid])
 
-                x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit  = player_struct  # unpack hit value
+                x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit, alive = player_struct  # unpack hit value
                 # do we see other player?
                 self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
                 # does other player see us?
@@ -248,7 +251,7 @@ class Player:
                 self.players[pid].set_angle_diff(self.angle, angle)
                 self.players[pid].position_diff((self.x, self.y), (x, y))
                 self.players[pid].set_other_params(walk)
-
+                self.players[pid].set_alive_status(alive)
                 self.players[pid].update_model((self.sin, self.cos), (sin, cos))
 
     def update_server_info(self, data: dict):
@@ -258,7 +261,7 @@ class Player:
             if data.keys() == self.players.keys():
                 for pid in data.keys():
                     player_struct = self.parse_data(data[pid])
-                    x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit = player_struct  # unpack hit value
+                    x, y, angle, sin, cos, walk, shot, dmg, rc_val, hp, hit, alive = player_struct  # unpack hit value
                     # do we see other player?
                     self.ray_cast_visible[pid] = self.player_to_player_ray_cast(other_pos=(x, y))
                     # does other player see us?
@@ -279,13 +282,16 @@ class Player:
                         self.game.sound.shotgun.set_volume(self.players[pid].calc_shot_volume())
                         self.game.sound.shotgun.play()
 
+                    self.players[pid].set_shot_status(shot)
+
                     if self.eye_contact[pid] and self.shot and self.players[pid].check_hit():
                         self.hit[pid] = True
+                        self.other_pain = True
                         self.players[pid].make_pain()
                         print(self.hit, shot)
                     else:
                         self.hit[pid] = False
-                    #print(hit, shot)
+
                     # we got enemy killed and now we need to animate his death
                     # we need to send self.alive parameter
                     # we need to animate attack while shooting
@@ -294,6 +300,7 @@ class Player:
                         print(f'i have  {self.health}hp and get damage = ', dmg)
                         self.get_damage(dmg)
 
+                    self.players[pid].set_alive_status(alive)
                     self.players[pid].update_model((self.sin, self.cos), (sin, cos))
             else:
                 self.update_player_instances(data)
@@ -312,8 +319,9 @@ class Player:
             x, y, angle, hp, sin, cos, walk = obj_data.get_player_data()
             shot, dmg, hit = obj_data.get_shot_state()
             rc_val: dict = obj_data.get_ray_cast_result()
+            alive = obj_data.get_alive_status()
             return (float(x), float(y), float(angle), float(sin), float(cos),
-                    bool(walk), bool(shot), int(dmg), rc_val, int(hp), hit)
+                    bool(walk), bool(shot), int(dmg), rc_val, int(hp), hit, bool(alive))
 
     def player_to_player_ray_cast(self, other_pos) -> bool:
         # calc theta
@@ -387,17 +395,27 @@ class Player:
         return False
 
     def update(self):  # +
+
         self.movement()
         self.mouse_control()
         self.recover_health()
 
         if self.game.network_game:
+
             self.send_data()
             data = self.recv_data()
+
+            if self.other_pain:
+                self.other_pain = False
+
+            if not self.alive:
+                self.reset_player_params()
+
             self.update_server_info(data)
 
         if not self.game.object_handler.no_npc:
             self.check_game_win()
+
 
     @property  # +
     def pos(self):
@@ -419,6 +437,12 @@ class PlayerModel(AnimatedSprite):
         self.idle_images = self.get_images(self.path + '/idle')
         self.pain_images = self.get_images(self.path + '/pain')
         self.walk_images = self.get_images(self.path + '/walk')
+
+        self.frame_counter = 0  # death
+        self.attack_frame_counter = 0
+        self.pain_frame_counter = 0
+        self.attack_animation_trigger = False
+        self.pain_animation_trigger = False
 
         # rotation
         self.angle_difference = 0
@@ -442,7 +466,6 @@ class PlayerModel(AnimatedSprite):
         self.is_attacking = False
         self.ray_cast_visible = False
 
-
         """
         0 - front
         1 - left_front
@@ -451,8 +474,7 @@ class PlayerModel(AnimatedSprite):
         4 - rear
         5 - right_rear
         6 - right
-        7 - right_front
-        
+        7 - right_front        
         """
 
         self.dirs = {
@@ -579,7 +601,6 @@ class PlayerModel(AnimatedSprite):
 
         self.directions(player_polar, model_polar)
         left_border = H_PI_DEG - PLAYER_MODEL_CONSTANT  # 90 deg - const
-        right_border = H_PI_DEG + PLAYER_MODEL_CONSTANT
         # print(f'angle: ({angle_degrees} degrees); '
         #       f'player_dir: {self.dirs[self.player_dir]}; '
         #       f'model_dir: {self.dirs[self.model_dir]}; '
@@ -658,13 +679,45 @@ class PlayerModel(AnimatedSprite):
     def set_other_params(self, walk):
         self.is_walking = walk
 
+    def animate_attack(self):
+        if not self.is_complanar() and not self.is_perpend():
+            if self.game.global_trigger and self.attack_frame_counter < len(self.attack_images):
+
+                self.attack_images.rotate(-1)
+                self.image = self.attack_images[0]
+                self.attack_frame_counter += 1
+        elif self.is_perpend():
+            if self.is_right():
+                self.image = self.player_view[6]
+            else:
+                self.image = self.player_view[2]
+        else:
+            self.image = self.player_view[4]
+
     def animate_death(self):
-        pass
+        if not self.alive:
+            if self.game.global_trigger and self.frame_counter < len(self.death_images) - 1:
+                self.death_images.rotate(-1)
+                self.image = self.death_images[0]
+                self.frame_counter += 1
+
+    def reset_frame_counter(self):
+        if self.frame_counter >= len(self.death_images) - 1:
+            self.frame_counter = 0
+
+        if self.attack_frame_counter >= len(self.attack_images) - 1:
+            self.attack_frame_counter = 0
+            self.attack_animation_trigger = False
+
+        if self.pain_frame_counter >= len(self.pain_images) - 1:
+            self.pain_frame_counter = 0
+            self.pain_animation_trigger = False
 
     def animate_pain(self):
-        self.check_animation_time()
-        self.animate(self.pain_images)
-        if self.animation_trigger:
+        if self.game.global_trigger and self.attack_frame_counter < len(self.pain_images):
+            self.pain_images.rotate(-1)
+            self.image = self.pain_images[0]
+            self.pain_frame_counter += 1
             self.pain = False
 
     def walking(self):
@@ -692,20 +745,32 @@ class PlayerModel(AnimatedSprite):
         vol = math.hypot(self.pos_diff_x, self.pos_diff_y)
         return vol
 
+    def set_alive_status(self, alive: bool):
+        self.alive = alive
+
+    def set_shot_status(self, shot: bool):
+        self.is_attacking = shot
+
     def update_model(self, player_polar, model_polar):
 
         if self.alive:
-
-            if self.pain:
+            if self.pain or self.pain_animation_trigger:
+                if self.pain:
+                    self.pain_animation_trigger = self.pain
                 self.animate_pain()
             elif self.is_walking:
                 self.walking()
-            else:
+            elif self.is_attacking or self.attack_animation_trigger:
+                if self.is_attacking:
+                    self.attack_animation_trigger = self.is_attacking
+                self.animate_attack()
+            elif not self.walking():
                 self.idle_moves(player_polar, model_polar)
+                self.get_sprite()
         else:
             self.animate_death()
 
         self.check_animation_time()
         self.get_sprite()
-        #self.show_walk()
-        #self.animate(self.idle_images)
+        self.reset_frame_counter()
+
