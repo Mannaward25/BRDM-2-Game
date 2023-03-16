@@ -408,8 +408,6 @@ class Player:
             if self.other_pain:
                 self.other_pain = False
 
-            if self.shot:
-                self.shot = False
 
             if not self.alive:
                 self.reset_player_params()
