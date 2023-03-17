@@ -1,5 +1,7 @@
 RES = WIDTH, HEIGHT = 1024, 768
-FPS = 30
+FPS = 60
 
 FONT_SIZE = 24
 INIT_RECT = (0, 0, 0, 0)
+ENABLE = True
+DISABLE = False
