@@ -191,6 +191,12 @@ class GamePause(Menu):
         self.quit_btn.update()
 
 
+class SettingsMenu(Menu):
+
+    def __init__(self, app, visible=True):
+        super().__init__(app, visible)
+
+
 class ContextNode:
 
     def __init__(self, menu, node=None):
