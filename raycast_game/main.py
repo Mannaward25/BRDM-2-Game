@@ -11,6 +11,7 @@ from weapon import *
 from sound import *
 from pathfinding import *
 from network_game import DedicatedServer, Client
+from menu import MenuManager
 import subprocess
 import time
 
@@ -28,9 +29,19 @@ class Game:  # +
         self.global_event = pg.USEREVENT + 0  # special global event for npc animation
         pg.time.set_timer(self.global_event, 40)  # special global event for npc animation
 
-        # network settings
-        self.HOST = host
+        # menu settings
+        self.background = pg.Surface(RES)
+        self.menu_flag = True
+        self.game_start_flag = False
+        self.game_pause_flag = False
+        self.no_npc = False
+        self.no_sound = True
         self.network_game = network_game
+        self.HOST = host
+        self.server_address = ''
+        self.menu_manager = MenuManager(self)
+
+        # network settings
         self.clients = 0
         self.client = None
         self.exec_path = sys.executable
@@ -40,14 +51,16 @@ class Game:  # +
             time.sleep(2)
 
         self.new_game()  # +
-        pg.mouse.set_visible(False)  # +
+
 
     @staticmethod
     def get_time():
         return pg.time.get_ticks() * 0.001
 
     def new_game(self):  # +
-        self.client = Client(self)
+        if self.network_game:
+            self.client = Client(self, server=self.server_address)
+
         self.map = Map(self)  # +
         self.player = Player(self)  # +
         #self.doom_fire = DoomFire(self)
@@ -56,9 +69,9 @@ class Game:  # +
         self.raycasting = RayCasting(self)  # +
 
         # new way of rendering sprite objects
-        self.object_handler = ObjectHandler(self, no_npc=True)
+        self.object_handler = ObjectHandler(self, no_npc=self.no_npc)
         self.weapon = Weapon(self)
-        self.sound = Sound(self, no_sound=True)
+        self.sound = Sound(self, no_sound=self.no_sound)
         self.pathfinding = PathFinding(self)
         self.mode_seven = FakeModeSeven(self)
 
@@ -74,6 +87,7 @@ class Game:  # +
 
         pg.display.update()
         self.delta_time = self.clock.tick(FPS)
+
         pg.display.set_caption(f'{self.clock.get_fps() :.1f}')
 
     def draw(self):
@@ -85,11 +99,21 @@ class Game:  # +
         #self.map.draw()  # working
         #self.player.draw()
 
+    def draw_menu(self):
+        self.background.fill('dark green')
+        self.screen.blit(self.background, (0, 0))
+        self.menu_manager.draw()
+
+    def update_menu(self):
+        pg.display.update()
+        self.delta_time = self.clock.tick(FPS)
+        self.menu_manager.update(self.delta_time)
+        pg.display.set_caption(f'menu app')
+
     def check_events(self):  # +
         self.global_trigger = False  # +
         for event in pg.event.get():  # +
-            if event.type == pg.QUIT or \
-                    (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+            if event.type == pg.QUIT: #  (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE)
 
                 if self.HOST:
                     self.client.send_msg(CLOSE)
@@ -105,20 +129,36 @@ class Game:  # +
                 self.player.is_walking = True
             elif event.type == pg.KEYUP and event.key in (pg.K_w, pg.K_a, pg.K_s, pg.K_d):
                 self.player.is_walking = False
-            self.player.single_fire_event(event)  # +
+            elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE and self.game_start_flag and not self.menu_flag:
+                print('main menu')
+                self.menu_manager.game_pause()
+            elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE and self.game_start_flag and self.menu_flag:
+                self.menu_manager.resume_game()
+
+            if self.game_start_flag and not self.game_pause_flag:
+                self.player.single_fire_event(event)  # +
+
+            self.menu_manager.menu_events(event)
 
     def run(self):  # +
         while True:  # +
             try:  # +
                 self.check_events()  # +
                 self.time = self.get_time()  # +
-                self.update()  # +
-                self.draw()  # +
+
+                if self.menu_flag:
+                    pg.mouse.set_visible(True)
+                    self.draw_menu()
+                    self.update_menu()
+                else:
+                    pg.mouse.set_visible(False)  # +
+                    self.update()  # +
+                    self.draw()  # +
             except ZeroDivisionError as err:  # +
                 print(f'{err}')  # +
                 continue  # +
 
 
 if __name__ == '__main__':  # +
-    game = Game(host=False, network_game=True)  # +
+    game = Game(host=False, network_game=False)  # +
     game.run()  # +

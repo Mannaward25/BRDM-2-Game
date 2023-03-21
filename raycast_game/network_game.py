@@ -50,7 +50,7 @@ class DedicatedServer:
         self.bind_socket()
         self.sock.listen(MAX_PLAYERS)
 
-        print("Waiting for connection..")
+        print(f"Waiting for connection on server [{LOCAL_SERVER_IP}:{PORT}]..")
 
     def assign_player_id(self, conn) -> 'HelloMsg':
         """player gets unique id after connecting to the server"""
@@ -158,7 +158,6 @@ class DedicatedServer:
             self.conn, self.address = self.sock.accept()
             self.clients += 1
             pid = self.assign_player_id(self.conn)
-            #print('ok')
             thread_id = _thread.start_new_thread(self.threaded_client, (self.conn, pid))
             print(f"connected to {self.address}")
 
@@ -174,8 +173,15 @@ class Client:
         self.client_id = '0'
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.server = server
-        self.port = port
+        if server:
+            self.server = server
+        else:
+            self.server = LOCAL_SERVER_IP
+
+        if port:
+            self.port = port
+        else:
+            self.port = PORT
 
         self.address = (self.server, self.port)
 

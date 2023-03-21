@@ -40,8 +40,15 @@ class Player:
         if self.game.HOST or self.game.network_game:
             while not self.try_connect() and tries < 3:
                 print("unsuccessful connection retrial in 3 sec")
+                self.game.menu_manager.msg_for_mp_label("unsuccessful connection")
                 time.sleep(3)
                 tries += 1
+
+            if tries >= 3:
+                self.game.menu_flag = True
+                self.game.game_start_flag = False
+                self.game.game_pause_flag = False
+                self.game.network_game = False
 
         if self.game.network_game:
             self.x, self.y = self.client.get_init_pos()
