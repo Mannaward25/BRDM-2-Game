@@ -10,7 +10,7 @@ from object_handler import *
 from weapon import *
 from sound import *
 from pathfinding import *
-from network_game import DedicatedServer, Client
+from network_game import Client
 from menu import MenuManager
 import subprocess
 import time
@@ -48,10 +48,6 @@ class Game:  # +
         self.clients = 0
         self.client = None
         self.exec_path = sys.executable
-
-        if self.HOST:
-            subprocess.Popen([self.exec_path, 'network_game.py'])
-            time.sleep(2)
 
         self.new_game()  # +
 
