@@ -37,14 +37,15 @@ class Player:
         self.is_walking = False
 
         tries = 0  # hardcode
+        max_tries = 1
         if self.game.HOST or self.game.network_game:
-            while not self.try_connect() and tries < 3:
-                print("unsuccessful connection retrial in 3 sec")
+            while not self.try_connect() and tries < max_tries:
+                print("unsuccessful connection retrial in 1 sec")
                 self.game.menu_manager.msg_for_mp_label("unsuccessful connection")
-                time.sleep(3)
+                time.sleep(1)
                 tries += 1
 
-            if tries >= 3:
+            if tries >= max_tries:
                 self.game.menu_flag = True
                 self.game.game_start_flag = False
                 self.game.game_pause_flag = False
