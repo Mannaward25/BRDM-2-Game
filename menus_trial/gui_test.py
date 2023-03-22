@@ -18,10 +18,16 @@ class Menu:
         return pg.Rect(pos, size)
 
     @staticmethod
-    def centered_position():
-        def_el_size = DEFAULT_BTN_SIZE[0]
-        def_pos_x = (WIDTH // 2) - (def_el_size // 2)
-        def_pos_y = (HEIGHT // 2) - (def_el_size // 2)
+    def centered_position(size=()):
+        def_pos_x, def_pos_y = 0, 0
+        if size:
+            def_el_size = size[0]
+            def_pos_x = (WIDTH // 2) - (def_el_size // 2)
+            def_pos_y = (HEIGHT // 2) - (def_el_size // 2)
+        else:
+            def_el_size = DEFAULT_BTN_SIZE[0]
+            def_pos_x = (WIDTH // 2) - (def_el_size // 2)
+            def_pos_y = (HEIGHT // 2) - (def_el_size // 2)
         return def_pos_x, def_pos_y
 
     def process(self, event):
@@ -48,7 +54,10 @@ class MainMenu(Menu):
         self.settings = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 100)),
                                               text=SETTINGS,
                                               manager=self.manager)
-        self.quit_btn = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 150)),
+        self.test_btn = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 150)),
+                                              text=TEST,
+                                              manager=self.manager)
+        self.quit_btn = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 200)),
                                               text=QUIT,
                                               manager=self.manager)
 
@@ -94,6 +103,20 @@ class QuitMenu(Menu):
                                             manager=self.manager)
 
 
+class TestMenu(Menu):
+
+    def __init__(self, app):
+        super().__init__(app)
+        x, y = self.centered_position((460, 240))
+        self.text_field = pgg.elements.UITextEntryBox(relative_rect=self.get_rect((x, y), (460, 240)),
+                                                      initial_text='',
+                                                      manager=self.manager)
+        self.text_field.disable()
+        self.back_btn = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 290)),
+                                              text=BACK,
+                                              manager=self.manager)
+
+
 class MenuManager:
 
     def __init__(self, app):
@@ -105,6 +128,7 @@ class MenuManager:
         self.label_object = self.multiplayer_menu.get_label()
 
         self.quit_menu = QuitMenu(app)
+        self.test_menu = TestMenu(app)
 
         self.history = MenuHistory()
 
@@ -114,7 +138,8 @@ class MenuManager:
             BACK: self.back_to_prev_menu,
             QUIT: self.quit_menu,
             YES: self.quit_game,
-            CONNECT: self.get_ip_address
+            CONNECT: self.get_ip_address,
+            TEST: self.test_menu
         }
 
         self.context_menu = self.init_menu()

@@ -4,14 +4,19 @@ import _thread
 import time
 import json
 import pickle
+import re
 from network_game import *
 
 
 class DedicatedServer:
-    def __init__(self):
+    def __init__(self, ip_address=''):
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server = LOCAL_SERVER_IP
+        if ip_address:
+            self.server = ip_address
+        else:
+            self.server = LOCAL_SERVER_IP
+
         self.port = PORT
         self.conn = None
         self.address = None
@@ -32,7 +37,7 @@ class DedicatedServer:
         self.bind_socket()
         self.sock.listen(MAX_PLAYERS)
 
-        print(f"Waiting for connection on server [{LOCAL_SERVER_IP}:{PORT}]..")
+        print(f"Waiting for connection on server [{self.server}:{PORT}]..")
 
     def assign_player_id(self, conn) -> 'HelloMsg':
         """player gets unique id after connecting to the server"""
@@ -148,8 +153,23 @@ class DedicatedServer:
         self.sock.close()
 
 
+def validate_ip(text):
+    pattern = r'^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$'
+    res = re.search(pattern, text)
+    if res:
+        return True
+    else:
+        print(f'Enter valid ip address!\n')
+        return False
+
+
 def main():
-    server_host = DedicatedServer()
+    ip_address = ''
+    while not validate_ip(ip_address):
+        ip_address = input(':>| ')
+
+    print(ip_address)
+    server_host = DedicatedServer(ip_address=ip_address)
     server_host.start()
     server_host.run()
 
