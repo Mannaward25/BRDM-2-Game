@@ -49,6 +49,7 @@ class Player:
                 self.game.game_start_flag = False
                 self.game.game_pause_flag = False
                 self.game.network_game = False
+                self.game.sound.main_menu()
 
         if self.game.network_game:
             self.x, self.y = self.client.get_init_pos()
