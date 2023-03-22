@@ -10,7 +10,7 @@ from game_settings import *
 class Menu:
 
     def __init__(self, app):
-        self.manager = pgg.UIManager(RES)
+        self.manager = pgg.UIManager(RES, theme_path='resources/themes/theme.json')
         self.app = app
         self.x, self.y = self.centered_position()
 
@@ -126,6 +126,25 @@ class GamePause(Menu):
                                               manager=self.manager)
 
 
+class SettingsMenu(Menu):
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.switch_sound = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y)),
+                                                  text=SWITCH_SOUND,
+                                                  manager=self.manager)
+        text = 'Sound off' if app.no_sound else 'Sound on'
+        self.sound_label = pgg.elements.UILabel(relative_rect=self.get_rect((self.x, self.y + 50)),
+                                                text=text,
+                                                manager=self.manager)
+        self.back_btn = pgg.elements.UIButton(relative_rect=self.get_rect((self.x, self.y + 100)),
+                                              text=BACK,
+                                              manager=self.manager)
+
+    def get_sound_label(self):
+        return self.sound_label
+
+
 class MenuManager:
 
     def __init__(self, app):
@@ -140,6 +159,9 @@ class MenuManager:
         self.game_pause_menu = GamePause(app)
         self.end_game_menu = EndGame(app)
 
+        self.settings_menu = SettingsMenu(app)
+        self.sound_label = self.settings_menu.get_sound_label()
+
         self.history = MenuHistory()
 
         self.menu_options = {
@@ -151,7 +173,9 @@ class MenuManager:
             CONNECT: self.start_multiplayer_game,
             CONTINUE: self.resume_game,
             MAIN: self.end_game,
-            END: self.end_game_menu
+            END: self.end_game_menu,
+            SETTINGS: self.settings_menu,
+            SWITCH_SOUND: self.switch_sound
         }
 
         self.context_menu = self.init_menu()
@@ -169,7 +193,11 @@ class MenuManager:
             context()
 
     def menu_events(self, event):
+        if event.type == pgg.UI_BUTTON_ON_HOVERED:
+            self.app.sound.hover.play()
         if event.type == pgg.UI_BUTTON_PRESSED:
+            if not self.app.game_start_flag or self.app.game_pause_flag:
+                self.app.sound.click.play()
             print(event.ui_element.text)
             context = self.menu_options.get(event.ui_element.text, False)
             if context:
@@ -211,6 +239,8 @@ class MenuManager:
         self.app.network_game = False
         self.app.no_npc = False
         self.app.new_game()
+        self.app.sound.stop()
+        self.app.sound.main_game()
 
     def start_multiplayer_game(self):
         if self.get_ip_address():
@@ -219,6 +249,8 @@ class MenuManager:
             self.app.game_start_flag = True
             self.app.no_npc = True
             self.app.new_game()
+            self.app.sound.stop()
+            self.app.sound.main_game()
 
     def game_pause(self):
         self.app.menu_flag = True
@@ -234,12 +266,25 @@ class MenuManager:
         self.label_object.set_text(f'{string}')
 
     def end_game(self):
+        if self.app.network_game:
+            self.app.client.close()
+
         self.app.game_start_flag = False
         self.app.network_game = False
         self.app.game_pause_flag = False
         self.app.menu_flag = True
         self.context_menu = self.main_menu
         self.history.add(self.context_menu)
+
+        self.app.sound.main_menu()
+
+    def switch_sound(self):
+        if self.app.no_sound:
+            self.app.no_sound = False
+            self.sound_label.set_text('Sound on')
+        else:
+            self.app.no_sound = True
+            self.sound_label.set_text('Sound off')
 
 
 class ContextNode:

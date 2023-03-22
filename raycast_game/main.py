@@ -35,10 +35,13 @@ class Game:  # +
         self.game_start_flag = False
         self.game_pause_flag = False
         self.no_npc = False
-        self.no_sound = True
+        self.no_sound = False
         self.network_game = network_game
         self.HOST = host
         self.server_address = ''
+        path = 'resources/pics/main.jpg'
+        self.bg_menu_img = pg.image.load(path).convert_alpha()
+        pg.transform.scale(self.bg_menu_img, RES)
         self.menu_manager = MenuManager(self)
 
         # network settings
@@ -51,7 +54,6 @@ class Game:  # +
             time.sleep(2)
 
         self.new_game()  # +
-
 
     @staticmethod
     def get_time():
@@ -71,7 +73,13 @@ class Game:  # +
         # new way of rendering sprite objects
         self.object_handler = ObjectHandler(self, no_npc=self.no_npc)
         self.weapon = Weapon(self)
+
         self.sound = Sound(self, no_sound=self.no_sound)
+        if not self.game_start_flag:
+            self.sound.main_menu()
+        else:
+            self.sound.main_game()
+
         self.pathfinding = PathFinding(self)
         self.mode_seven = FakeModeSeven(self)
 
@@ -101,7 +109,7 @@ class Game:  # +
 
     def draw_menu(self):
         self.background.fill('dark green')
-        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.bg_menu_img, (0, 0))
         self.menu_manager.draw()
 
     def update_menu(self):

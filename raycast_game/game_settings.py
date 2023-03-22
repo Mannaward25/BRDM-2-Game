@@ -1,12 +1,16 @@
 import math
+import ctypes
+USER32 = ctypes.windll.user32
+SCREEN_W, SCREEN_H = USER32.GetSystemMetrics(0), USER32.GetSystemMetrics(1)
+print(SCREEN_W, SCREEN_H)
 
 #  BLOCK SIZE
-BLOCK_SIZE = 50  #  100 for (1600, 900)  50 for (1200, 600)  # +
+BLOCK_SIZE = 100  #  100 for (1600, 900)  50 for (1200, 600)  # + 1920 1080
 WEAPON_SCALE = 0.3  # 0.4 for (1600, 900) 0.3 for (1200, 600)
 PLAYER_SIZE_SCALE = 80
 
 #  window settings
-RES = WIDTH, HEIGHT = (1200, 600)  # (1600, 900) (1200, 600)  # +
+RES = WIDTH, HEIGHT = (SCREEN_W, SCREEN_H)  # (1600, 900) (1200, 600)  # +
 FPS = 120  # +
 
 #  game settings
@@ -129,3 +133,4 @@ YES = 'Yes'
 CONTINUE = 'Continue'
 MAIN = 'Back to main'
 END = 'Go to main menu'
+SWITCH_SOUND = 'Switch sound'
