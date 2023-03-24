@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 from settings import *
+from stacked_sprite import StackedSprite
 
 
 class Game:
@@ -9,10 +10,17 @@ class Game:
         pg.init()
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
-        self.delta_time = 1
+        self.delta_time = 0.01
+        self.time = 0
+
+        self.main_group = pg.sprite.Group()
+        # scene
+        StackedSprite(self, name='brdm', pos=(0, 0))
 
     def draw(self):
-        self.screen.fill('black')
+        self.screen.fill(BG_COLOR)
+        self.main_group.draw(self.screen)
+        pg.display.flip()
 
     def check_events(self):
         for event in pg.event.get():
@@ -20,17 +28,20 @@ class Game:
                 pg.quit()
                 sys.exit()
 
-    def update(self):
+    def get_time(self):
+        self.time = pg.time.get_ticks() * 0.001
 
-        pg.display.update()
+    def update(self):
+        self.main_group.update()
         self.delta_time = self.clock.tick(FPS)
-        pg.display.set_caption('brdm-2 game')
+        pg.display.set_caption(f'brdm-2 game, fps: {self.clock.get_fps() :.1f}')
 
     def run(self):
         while True:
             self.check_events()
-            self.draw()
+            self.get_time()
             self.update()
+            self.draw()
 
 
 if __name__ == '__main__':
