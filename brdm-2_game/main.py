@@ -2,6 +2,7 @@ import pygame as pg
 import sys
 from settings import *
 from stacked_sprite import StackedSprite
+from cache import Cache
 
 
 class Game:
@@ -13,9 +14,14 @@ class Game:
         self.delta_time = 0.01
         self.time = 0
 
+        # groups
         self.main_group = pg.sprite.Group()
+        # game objects
+        self.cache = Cache()
+
         # scene
-        StackedSprite(self, name='brdm', pos=(0, 0))
+        StackedSprite(self, name='brdm', pos=(-WIDTH // 4, 0))
+        StackedSprite(self, name='tank', pos=(WIDTH // 4, 0))
 
     def draw(self):
         self.screen.fill(BG_COLOR)

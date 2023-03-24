@@ -24,6 +24,11 @@ STACKED_SPRITE_ASSETS = {
         'path': 'resources/sprite/stacked_sprite/brdm.png',
         'num_layers': 40,
         'scale': 4
-    }
+            },
+    'tank': {
+        'path': 'resources/sprite/stacked_sprite/tank.png',
+        'num_layers': 17,
+        'scale': 13
+             }
 
 }
