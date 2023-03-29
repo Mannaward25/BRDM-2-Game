@@ -2,7 +2,10 @@ from settings import *
 
 
 class Cache:
-
+    """
+    future: might be possible to store cached data in binary file using pickle or shelve module
+    will try to implement that feature to shorten loading time
+    """
     def __init__(self):
         self.stacked_sprite_cache = {}
         self.viewing_angle = 360 // NUM_ANGLES

@@ -3,6 +3,7 @@ import sys
 from settings import *
 from stacked_sprite import StackedSprite
 from cache import Cache
+from player import Player
 
 
 class Game:
@@ -18,6 +19,7 @@ class Game:
         self.main_group = pg.sprite.Group()
         # game objects
         self.cache = Cache()
+        self.player = Player(self)
 
         # scene
         StackedSprite(self, name='brdm', pos=(-WIDTH // 4, 0))

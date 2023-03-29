@@ -7,6 +7,7 @@ CENTER = WIDTH // 2, HEIGHT // 2
 FPS = 120
 
 NUM_ANGLES = 90
+PLAYER_SPEED = 0.4
 
 
 # colors
