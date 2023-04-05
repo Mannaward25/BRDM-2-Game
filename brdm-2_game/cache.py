@@ -1,4 +1,5 @@
 from settings import *
+import os
 
 
 class Cache:
@@ -8,7 +9,7 @@ class Cache:
     """
     def __init__(self):
         self.stacked_sprite_cache = {}
-        self.viewing_angle = 360 // NUM_ANGLES
+        self.viewing_angle = VIEWING_ANGLE
         self.get_stacked_sprite_cache()
 
     def get_layer_array(self, attrs):
@@ -36,16 +37,19 @@ class Cache:
             surf = pg.Surface(layer_array[0].get_size())
             surf = pg.transform.rotate(surf, angle * self.viewing_angle)
             sprite_surf = pg.Surface([surf.get_width(),
-                                      surf.get_height() + attrs['num_layers'] * attrs['scale']])
-            sprite_surf.fill('khaki')
-            sprite_surf.set_colorkey('khaki')
+                                      surf.get_height() + attrs['num_layers'] * attrs['scale']], pg.SRCALPHA, 32)
+            # sprite_surf.fill(BG_COLOR)
+            #sprite_surf.set_colorkey((255, 0, 255))
 
             for idx, layer in enumerate(layer_array):
                 layer = pg.transform.rotate(layer, angle * self.viewing_angle)
+                #pg.image.save(layer, f'resources/cached_sprites/{obj_name}_{angle}_{idx}.png')
                 sprite_surf.blit(layer, (0, idx * attrs['scale']))
 
             image = pg.transform.flip(sprite_surf, True, True)
+
             self.stacked_sprite_cache[obj_name]['rotated_sprites'][angle] = image
+
 
     def get_stacked_sprite_cache(self):
         for obj_name in STACKED_SPRITE_ASSETS:
@@ -56,3 +60,35 @@ class Cache:
             layer_array = self.get_layer_array(attrs)
 
             self.run_prerender(obj_name, layer_array, attrs)
+
+
+class PreloadedSprites:
+    def __init__(self):
+        self.stacked_sprite_cache = {}
+        self.path = 'resources/cached_sprites/'
+        self.load_assets(self.path)
+
+
+    def load_assets(self, path):
+        for file in os.listdir(path):
+            #print(file[:-4])
+            obj_name, angle, idx = file[:-4].split('_')
+            attrs = STACKED_SPRITE_ASSETS[obj_name]
+            full_path = os.path.join(path, file)
+            image = pg.image.load(full_path)
+
+            if obj_name not in self.stacked_sprite_cache:
+                self.stacked_sprite_cache[obj_name] = {
+                    'rotated_sprites': {}
+                    }
+                self.stacked_sprite_cache[obj_name]['rotated_sprites'][int(angle)] = image
+            else:
+                self.stacked_sprite_cache[obj_name]['rotated_sprites'][int(angle)] = image
+
+
+if __name__ == '__main__':
+    pg.init()
+    display = pg.display.set_mode(RES)
+    cache = Cache()
+    app = PreloadedSprites()
+

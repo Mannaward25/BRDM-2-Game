@@ -8,10 +8,11 @@ FPS = 120
 
 NUM_ANGLES = 90
 PLAYER_SPEED = 0.4
+VIEWING_ANGLE = 360 // NUM_ANGLES
 
 
 # colors
-BG_COLOR = (20, 30, 46)
+BG_COLOR = (20, 30, 46)  # (20, 30, 46)
 
 # stacked sprite settings
 

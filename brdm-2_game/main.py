@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 from settings import *
 from stacked_sprite import StackedSprite
-from cache import Cache
+from cache import Cache, PreloadedSprites
 from player import Player
 
 
@@ -18,7 +18,7 @@ class Game:
         # groups
         self.main_group = pg.sprite.Group()
         # game objects
-        self.cache = Cache()
+        self.cache = PreloadedSprites()
         self.player = Player(self)
 
         # scene

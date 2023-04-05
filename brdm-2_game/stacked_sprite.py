@@ -14,7 +14,7 @@ class StackedSprite(pg.sprite.Sprite):
 
         self.attrs = STACKED_SPRITE_ASSETS[name]
         self.cache = app.cache.stacked_sprite_cache
-        self.viewing_angle = app.cache.viewing_angle
+        self.viewing_angle = VIEWING_ANGLE
         self.rotated_sprites = self.cache[name]['rotated_sprites']
 
         self.angle = 0
