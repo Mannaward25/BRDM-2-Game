@@ -1,5 +1,6 @@
 from settings import *
 import os
+import pickle
 
 
 class Cache:
@@ -43,13 +44,12 @@ class Cache:
 
             for idx, layer in enumerate(layer_array):
                 layer = pg.transform.rotate(layer, angle * self.viewing_angle)
-                #pg.image.save(layer, f'resources/cached_sprites/{obj_name}_{angle}_{idx}.png')
+                pg.image.save(layer, f'resources/cached_sprites/{obj_name}_{angle}_{idx}.png')
                 sprite_surf.blit(layer, (0, idx * attrs['scale']))
 
             image = pg.transform.flip(sprite_surf, True, True)
 
             self.stacked_sprite_cache[obj_name]['rotated_sprites'][angle] = image
-
 
     def get_stacked_sprite_cache(self):
         for obj_name in STACKED_SPRITE_ASSETS:
@@ -62,12 +62,62 @@ class Cache:
             self.run_prerender(obj_name, layer_array, attrs)
 
 
+class ByteStorage:
+    def __init__(self):
+        self.storage = dict()
+        self.path = 'resources/cached_sprites/'
+        self.load_assets(self.path)
+
+    def get_binary_data(self, path):
+        data: bytes = b''
+        with open(path, 'rb') as f:
+            data = f.read()
+
+        return data
+
+    def load_assets(self, path):
+        for file in os.listdir(path):
+            obj_name, angle, idx = file[:-4].split('_')
+            full_path = os.path.join(path, file)
+
+            data = self.get_binary_data(full_path)
+
+            if obj_name not in self.storage:
+                self.storage[obj_name] = {}
+                if angle not in self.storage[obj_name]:
+                    self.storage[obj_name][angle] = {}
+                    self.storage[obj_name][angle][idx] = data
+                else:
+                    self.storage[obj_name][angle][idx] = data
+            else:
+                if angle not in self.storage[obj_name]:
+                    self.storage[obj_name][angle] = {}
+                    self.storage[obj_name][angle][idx] = data
+                else:
+                    self.storage[obj_name][angle][idx] = data
+
+    def show_storage(self):
+        for key, value in self.storage.items():
+            print(key, value)
+
+    def get_full_path(self):
+        path = os.path.join(self.path, 'game_db')
+        return path
+
+    def save_database(self):
+        path = self.get_full_path()
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
+
+    def get_storage_data(self):
+        return self.storage
+
+
 class PreloadedSprites:
     def __init__(self):
         self.stacked_sprite_cache = {}
         self.path = 'resources/cached_sprites/'
         self.load_assets(self.path)
-
 
     def load_assets(self, path):
         for file in os.listdir(path):
@@ -89,6 +139,8 @@ class PreloadedSprites:
 if __name__ == '__main__':
     pg.init()
     display = pg.display.set_mode(RES)
-    cache = Cache()
-    app = PreloadedSprites()
+    store = ByteStorage()
+    store.save_database()
+    #cache = Cache()
+    #app = PreloadedSprites()
 
