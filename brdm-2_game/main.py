@@ -2,7 +2,7 @@ import pygame as pg
 import sys
 from settings import *
 from stacked_sprite import StackedSprite
-from cache import Cache, PreloadedSprites
+from cache import Cache, PreloadedSprites, ByteStorage
 from player import Player
 
 

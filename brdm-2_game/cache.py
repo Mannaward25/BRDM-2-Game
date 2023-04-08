@@ -1,5 +1,6 @@
 from settings import *
 import os
+import io
 import pickle
 
 
@@ -109,38 +110,61 @@ class ByteStorage:
         with open(path, 'wb') as f:
             pickle.dump(self, f)
 
-    def get_storage_data(self):
+    def get_storage_data(self) -> dict:
         return self.storage
 
 
 class PreloadedSprites:
     def __init__(self):
         self.stacked_sprite_cache = {}
-        self.path = 'resources/cached_sprites/'
-        self.load_assets(self.path)
+        self.path = 'resources/cached_sprites/game_db'
+        self.loaded_data: ByteStorage = None
+        self.open_db(self.path)
 
-    def load_assets(self, path):
-        for file in os.listdir(path):
-            #print(file[:-4])
-            obj_name, angle, idx = file[:-4].split('_')
+    def open_db(self, path):
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+            self.loaded_data = data
+
+    def byte_image_extraction(self, byte_data) -> pg.Surface:
+        image: pg.Surface = None
+        with io.BytesIO(byte_data) as file:
+            binary_image = file.read()
+            image = pg.image.load(binary_image)
+        return image
+
+    def compile_sprites(self):
+        storage = self.loaded_data.get_storage_data()
+        obj_names = list(storage.keys())
+        for obj_name in obj_names:
             attrs = STACKED_SPRITE_ASSETS[obj_name]
-            full_path = os.path.join(path, file)
-            image = pg.image.load(full_path)
+            first_layout_img = self.byte_image_extraction(storage[obj_name]['0']['0'])
+            for angle in range(NUM_ANGLES):
 
-            if obj_name not in self.stacked_sprite_cache:
-                self.stacked_sprite_cache[obj_name] = {
-                    'rotated_sprites': {}
-                    }
-                self.stacked_sprite_cache[obj_name]['rotated_sprites'][int(angle)] = image
-            else:
-                self.stacked_sprite_cache[obj_name]['rotated_sprites'][int(angle)] = image
+                surf = pg.Surface(first_layout_img.get_size())
+                surf = pg.transform.rotate(surf, angle * VIEWING_ANGLE)
+                sprite_surf = pg.Surface([surf.get_width(),
+                                          surf.get_height() + attrs['num_layers'] * attrs['scale']], pg.SRCALPHA, 32)
+
+                # sprite_surf.fill(BG_COLOR)
+                # sprite_surf.set_colorkey((255, 0, 255))
+
+                for idx in range(attrs['num_layers']):
+                    layer_img = self.byte_image_extraction(storage[obj_name][str(angle)][str(idx)])
+                    layer = pg.transform.rotate(layer_img, angle * VIEWING_ANGLE)
+                    sprite_surf.blit(layer, (0, idx * attrs['scale']))
+
+                image = pg.transform.flip(sprite_surf, True, True)
+
+                self.stacked_sprite_cache[obj_name]['rotated_sprites'][angle] = image
 
 
 if __name__ == '__main__':
     pg.init()
     display = pg.display.set_mode(RES)
-    store = ByteStorage()
-    store.save_database()
+    # store = ByteStorage()
+    # store.save_database()
     #cache = Cache()
-    #app = PreloadedSprites()
+    app = PreloadedSprites()
+
 
