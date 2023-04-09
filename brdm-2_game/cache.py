@@ -39,13 +39,13 @@ class Cache:
             surf = pg.Surface(layer_array[0].get_size())
             surf = pg.transform.rotate(surf, angle * self.viewing_angle)
             sprite_surf = pg.Surface([surf.get_width(),
-                                      surf.get_height() + attrs['num_layers'] * attrs['scale']], pg.SRCALPHA, 32)
-            # sprite_surf.fill(BG_COLOR)
-            #sprite_surf.set_colorkey((255, 0, 255))
+                                      surf.get_height() + attrs['num_layers'] * attrs['scale']])
+            sprite_surf.fill('khaki')
+            sprite_surf.set_colorkey('khaki')
 
             for idx, layer in enumerate(layer_array):
                 layer = pg.transform.rotate(layer, angle * self.viewing_angle)
-                pg.image.save(layer, f'resources/cached_sprites/{obj_name}_{angle}_{idx}.png')
+                #pg.image.save(layer, f'resources/cached_sprites/{obj_name}_{angle}_{idx}.png')
                 sprite_surf.blit(layer, (0, idx * attrs['scale']))
 
             image = pg.transform.flip(sprite_surf, True, True)
@@ -120,6 +120,7 @@ class PreloadedSprites:
         self.path = 'resources/cached_sprites/game_db'
         self.loaded_data: ByteStorage = None
         self.open_db(self.path)
+        self.compile_sprites()
 
     def open_db(self, path):
         with open(path, 'rb') as f:
@@ -128,14 +129,22 @@ class PreloadedSprites:
 
     def byte_image_extraction(self, byte_data) -> pg.Surface:
         image: pg.Surface = None
-        with io.BytesIO(byte_data) as file:
-            binary_image = file.read()
+        with io.BytesIO(byte_data) as binary_image:
+            #binary_image = file.read()
             image = pg.image.load(binary_image)
         return image
+
+    def get_stacked_sprite_cache(self, obj_names):
+        for obj_name in obj_names:
+            self.stacked_sprite_cache[obj_name] = {
+                'rotated_sprites': {}
+            }
 
     def compile_sprites(self):
         storage = self.loaded_data.get_storage_data()
         obj_names = list(storage.keys())
+        self.get_stacked_sprite_cache(obj_names)
+
         for obj_name in obj_names:
             attrs = STACKED_SPRITE_ASSETS[obj_name]
             first_layout_img = self.byte_image_extraction(storage[obj_name]['0']['0'])
@@ -144,10 +153,10 @@ class PreloadedSprites:
                 surf = pg.Surface(first_layout_img.get_size())
                 surf = pg.transform.rotate(surf, angle * VIEWING_ANGLE)
                 sprite_surf = pg.Surface([surf.get_width(),
-                                          surf.get_height() + attrs['num_layers'] * attrs['scale']], pg.SRCALPHA, 32)
+                                          surf.get_height() + attrs['num_layers'] * attrs['scale']])
 
-                # sprite_surf.fill(BG_COLOR)
-                # sprite_surf.set_colorkey((255, 0, 255))
+                sprite_surf.fill('khaki')
+                sprite_surf.set_colorkey('khaki')
 
                 for idx in range(attrs['num_layers']):
                     layer_img = self.byte_image_extraction(storage[obj_name][str(angle)][str(idx)])

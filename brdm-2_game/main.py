@@ -18,7 +18,7 @@ class Game:
         # groups
         self.main_group = pg.sprite.Group()
         # game objects
-        self.cache = PreloadedSprites()
+        self.cache = Cache()
         self.player = Player(self)
 
         # scene
